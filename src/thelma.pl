@@ -46,10 +46,6 @@ learn(Pos,Neg,Prog):-
 	,disprove(Neg,Ps)
 	,project_metasubs(Ps, true, Prog).
 
-/*[debug]  ?- findall([grandfather,A,B], tiny_kinship:grandfather(A,B), _Gs),learn(_Gs,[],Ps).Ps = [(grandfather(A, B):-parent(A, C), parent(C, B))] ;
-Ps = [(grandfather(A, B):-father(A, C), parent(C, B))] ;
-false.*/
-
 
 %!	depth_level(+Clause_Max,+Invented_Max,-Clauses,-Invented) is
 %!	det.
@@ -73,8 +69,8 @@ depth_level(C,I,C_,I_):-
 %	respectively, for the iterative deepening search.
 %
 prove(_,_,[],_,MS,MS_):-
-	reverse(MS,MS_)
-	,!.
+	!
+	,reverse(MS,MS_).
 prove(I,K,[A|As],PS,Acc,Bind):-
 	background_predicate(A)
 	,!
@@ -144,7 +140,7 @@ background_predicate([F|Args]):-
 %
 metasubstitution([A|As],PS,sub(Id,[A,P|Ss]),Bs):-
 	member(P,PS)
-	,metarule_instance(Id,[A,P|Ss],As,Bs).
+	,metarule_instance(Id,[A,P|Ss],As,[_Hs|Bs]).
 metasubstitution([A|As],PS,sub(Id,[A,P1,P2|Ss]),Bs):-
 	member(P1,PS)
 	,member(P2,PS)
@@ -159,7 +155,7 @@ abduction(MS,Prog,[MS|Prog]):-
 	\+ memberchk(MS, Prog).
 
 
-%!	metarule_instanece(+Id,+Second_order,+First_order,-Body) is det.
+%!	metarule_instanece(+Id,+Second_order,+First_order,-Rule) is det.
 %
 %	A Generator of metarule instances.
 %

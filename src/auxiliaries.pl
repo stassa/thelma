@@ -110,6 +110,8 @@ cleanup_experiment:-
 %
 %	Transform metarules to internal representation.
 %
+%	@tbd Probably use bagof/3 or setof/3 here?
+%
 transform_metarules:-
 	findall(metarule(Id,Ss,Fs,Bs)
 	       ,configuration:metarule(Id,Ss,Fs,Bs)
@@ -143,6 +145,7 @@ assert_metarules([metarule(Id,Ss,Fs,Bs)|Ms]):-
 	,metarule_body(Bs, [], Bs_)
 	,T =.. [F,Id,Ss,Fs,Bs_]
 	,user:assert(T)
+	%,numbervars(T) ,writeln(T)
 	,assert_metarules(Ms).
 
 
