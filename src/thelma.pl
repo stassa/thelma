@@ -6,6 +6,31 @@
 
 /** <module> A simple Meta-Interpretive Learner, meant for educational purposes.
 
+An example learning session
+---------------------------
+
+?- initialise_experiment.
+true.
+
+?- experiment_data(grandfather,_Pos,_Neg,_BK,_MS,false), learn(_Pos,_Neg,_Prog),print_clauses(_Prog).
+grandfather(A,B):-father(A,C),parent(C,B).
+true ;
+grandfather(A,B):-father(A,C),parent(C,B).
+grandfather(A,B):-father(A,C),father(C,B).
+true ;
+grandfather(A,B):-father(A,C),mother(C,B).
+grandfather(A,B):-father(A,C),father(C,B).
+true ;
+grandfather(A,B):-father(A,C),parent(C,B).
+true ;
+grandfather(A,B):-father(A,C),mother(C,B).
+grandfather(A,B):-father(A,C),parent(C,B).
+true ;
+false.
+
+?- cleanup_experiment.
+true.
+
 */
 
 

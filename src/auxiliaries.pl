@@ -14,7 +14,7 @@
 
 */
 
-:- dynamic '$metarule'/4.
+:- dynamic user:'$metarule'/4.
 
 
 %!	experiment_data(+Target,-Positive,-Negative,-BK,-Metarules,+Unload)
@@ -170,7 +170,7 @@ metarule_body((L),Acc,Bs_):-
 cleanup_metarules:-
 	metarule_functor(F)
 	,functor(T,F,4)
-	,retractall(T).
+	,user:retractall(T).
 
 
 
