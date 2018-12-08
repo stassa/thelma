@@ -116,26 +116,6 @@ Ps_ =  (grandfather(A, B):-parent(A, C), parent(C, B)) ;
 false.*/
 
 
-%!	disprove(+Program,+Metasubs) is det.
-%
-%	True when Program does not cover Metasubs.
-%
-disprove(Neg,Ms):-
-	project_metasubs(Ms,false,Prog)
-	,assert_program(thelma,Prog)
-	,forall(member(A,Neg)
-	       ,(A_ =.. A
-		,\+ call(A_)
-		)
-	       )
-	,retract_program(thelma,Prog)
-	,!.
-disprove(_Neg,Ms):-
-	project_metasubs(Ms,false,Prog)
-	,retract_program(thelma,Prog)
-	,fail.
-
-
 %!	background_predicate(+Atom) is det.
 %
 %	True when Atom is an atom of a background knowledge predicate.
@@ -189,6 +169,26 @@ metarule_instance(Id,Ss,Fs,Bs):-
 	,member(Id,Ms)
 	,T =.. [F,Id,Ss,Fs,Bs]
 	,user:call(T).
+
+
+%!	disprove(+Program,+Metasubs) is det.
+%
+%	True when Program does not cover Metasubs.
+%
+disprove(Neg,Ms):-
+	project_metasubs(Ms,false,Prog)
+	,assert_program(thelma,Prog)
+	,forall(member(A,Neg)
+	       ,(A_ =.. A
+		,\+ call(A_)
+		)
+	       )
+	,retract_program(thelma,Prog)
+	,!.
+disprove(_Neg,Ms):-
+	project_metasubs(Ms,false,Prog)
+	,retract_program(thelma,Prog)
+	,fail.
 
 
 %!	project_metasubs(+Metasubstitutions,+Skolemise,-Program) is det.
