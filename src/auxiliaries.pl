@@ -1,4 +1,5 @@
-:-module(auxiliaries, [experiment_data/6
+:-module(auxiliaries, [order_constraints/3
+		      ,experiment_data/6
 		      ,predicate_signature/1
 		      ,assert_program/2
 		      ,retract_program/2
@@ -17,6 +18,139 @@
 :- dynamic user:'$metarule'/4.
 
 
+%!	order_constraints(-Predicates,-Constants,+Default) is det.
+%
+%	Assign an automatic ordering to the Herbrand base.
+%
+%	Default must be one of [lower, higher], denoting whether
+%	constants found in multiple predicates are ordered according to
+%	their higher, or lower possible ordering.
+%
+%	Predicates is a list of compounds P1 > P2 where P1 and P2 are
+%	symbols of predicates in the background knowledge and P1 is
+%	above P2 in the lexicographic ordering of predicates.
+%
+%	Similarly, Constants is a list of compounds C1 > C2, where each
+%	C1 and C2 are constants in atoms of background predicats and C1
+%	is above C2 in the interval ordering of constants.
+%
+%	The two orderings are assigned according to the appearance of
+%	terms in a source file. Specifically:
+%
+%	a) Each predicate is assigned a rank according to is appearance
+%	in the list background_knowledge/1, in an experiment file.
+%
+%	b) Each constant is assigned one or more indexings I/J/K, where
+%	I is the rank of a predicate that includes it as a term, J is 1
+%	if the constant is the first argument, or 2 if it's the second
+%	argument, of that predicate and K is the index of the atom in
+%	which it appears (which coincides with the index of that clause
+%	if the predicate is defined extensionally).
+%
+%	The relative order of constants then depends on the I/J/K
+%	indexings assigned to them. In an ordered pair C1 > C2, C1 is
+%	above C2 in the total interval ordering iff I1/J1/K1 > I2/J2/K2
+%	(where the indexing subscripts match the contstant subscripts).
+%
+%	When a constant appears multiple times in different atoms of
+%	possibly different predicates, it is assigned multiple
+%	indexings. This is resolved by taking into account the
+%	value of Default. If Default is lower, the indexing resulting in
+%	the lowest possible ordering is assinged to the constant. If
+%	Default is higher, the highest ordering is assigned to it
+%	instead.
+%
+order_constraints(Ps,Cs,D):-
+	must_be(oneof([lower,higher]),D)
+	,configuration:experiment_file(_P,M)
+	,M:background_knowledge(BK)
+	,predicate_order(BK,Ps)
+	,constants_indexing(M,BK,Is)
+	,unique_indices(Is,Is_,D)
+	,sort(1,@<,Is_,Is_s)
+	,indexing_constraints(Is_s, Cs).
+
+
+%!	predicate_order(+Background,-Order) is det.
+%
+%	Order predicates by their appearance in the Background.
+%
+predicate_order(BK,Os):-
+	findall(F
+	       ,member(F/_,BK)
+	       ,Ps)
+	,predicate_order(Ps,[],Os).
+
+predicate_order([_],Os,Os):-
+	!.
+predicate_order([P1,P2|Ps],Acc,Bind):-
+	predicate_order([P2|Ps],[P1 > P2|Acc],Bind).
+
+
+%!	constants_indexing(+Module,+Background,-Indexed) is det.
+%
+%	Index Background constants according to their declaration order.
+%
+constants_indexing(M,BK,Is):-
+	findall([c(I/1/J,A1),c(I/2/J,A2)]
+	       ,(nth1(I,BK,F/A)
+		,functor(T,F,A)
+		,findall(T
+			,M:call(T)
+			,Ts)
+		,nth1(J,Ts,Ti)
+		,Ti =.. [F,A1,A2]
+		)
+	       ,Cs_)
+	,flatten(Cs_, Cs_flat)
+	,sort(2,@=<,Cs_flat,Is).
+
+
+%!	unique_indices(+Indices,+Order,-Unique) is det.
+%
+%	Remove duplicate ordering indices.
+%
+unique_indices(Is,Is_,O):-
+	unique_indices(O,Is,[],Is_).
+
+
+%!	unique_indices(+Order,+Indices,+Acc,-Unique) is det.
+%
+%	Business end of unique_indices/2.
+%
+unique_indices(_,[],Is,Is):-
+	!.
+unique_indices(lower,[c(_/_/_,C1),c(I/J/K,C1)|Ss],Acc,Bind):-
+	!
+	,unique_indices(lower,[c(I/J/K,C1)|Ss],Acc,Bind).
+unique_indices(higher,[c(I/J/K,C1),c(_/_/_,C1)|Ss],Acc,Bind):-
+	!
+	,unique_indices(higher,[c(I/J/K,C1)|Ss],Acc,Bind).
+unique_indices(O,[c(I/J/K,C)|Ss],Acc,Bind):-
+	unique_indices(O,Ss,[c(I/J/K,C)|Acc],Bind).
+
+
+%!	indexing_constraints(+Indexing,-Constraints) is det.
+%
+%	Generate a set of Constraints from an Indexing order.
+%
+indexing_constraints(Is,Cs):-
+	indexing_constraints(Is,[],Cs).
+
+
+%!	indexing_constraints(+Indexing,+Acc,-Constraints) is det.
+%
+%	Business end of indexing_constraints/2.
+%
+indexing_constraints([_],Cs,Cs_):-
+	reverse(Cs, Cs_)
+	,!.
+indexing_constraints([c(_/_/_,C1),c(I/J/K,C2)|Is],Acc,Bind):-
+	indexing_constraints([c(I/J/K,C2)|Is],[C1 > C2|Acc],Bind).
+
+
+
+
 %!	experiment_data(+Target,-Positive,-Negative,-BK,-Metarules,+Unload)
 %!	is det.
 %
@@ -25,6 +159,12 @@
 %	Unload is a boolean that denotes whether to unload the
 %	experiment file after collecting all the required data from it,
 %	or not.
+%
+%	@tbd This should not load and unload the experiment file.
+%	initialise_experiment/0 and cleanup_experiment/0 should be the
+%	only points where an experiment file is loaded and unloaded and
+%	every predicate that wants to access terms in the experiment
+%	file must be called between calls to those two.
 %
 experiment_data(T,Pos,Neg,BK,MS,Ul):-
 	configuration:experiment_file(P,M)
