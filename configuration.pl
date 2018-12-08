@@ -16,7 +16,7 @@
 %
 %	The maximum number of Clauses and Invented predicates.
 %
-depth_limits(2,0).
+depth_limits(3,2).
 
 
 %!	experiment_file(?Path,?Module) is semidet.

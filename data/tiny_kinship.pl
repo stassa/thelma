@@ -7,9 +7,9 @@
 		       ,parent/2
 		       ]).
 
-background_knowledge([father/2,parent/2,mother/2]).
+background_knowledge([father/2,mother/2]).
 
-metarules([chain,inverse]).
+metarules([chain,identity]).
 
 father(stathis, kostas).
 father(stefanos, dora).

@@ -42,8 +42,10 @@ learn(Pos,Neg,Prog):-
 	configuration:depth_limits(C,I)
 	,predicate_signature(PS)
 	,depth_level(C,I,C_,I_)
+	,invented_symbols(I_,Pos,Ss)
+	,append(PS,Ss,PS_)
 	,debug(depth,'Clauses: ~w; Invented: ~w',[C_,I_])
-	,prove(0,C_,Pos,PS,[],Ps)
+	,prove(0,C_,Pos,PS_,[],Ps)
 	,disprove(Neg,Ps)
 	,project_metasubs(Ps, true, Prog).
 
@@ -59,6 +61,18 @@ depth_level(C,I,C_,I_):-
 	between(1,C,C_)
 	,between(0,I,I_)
 	,I_ < C_.
+
+
+%!	invented_symbols(+Symbols,+Examples,-Invented) is det.
+%
+%	Create new symbols for Invented predicates.
+%
+invented_symbols(K,[[S|_As]|_],Ss):-
+	findall(S_
+	       ,(between(1,K,I)
+		,atomic_list_concat([S,I],'_',S_)
+		)
+	       ,Ss).
 
 
 %!	prove(+Depth,+Limit,+Atoms,+Signature,+Acc,-Metasubstitutions)
@@ -144,10 +158,15 @@ background_predicate([F|Args]):-
 %
 metasubstitution([A|As],PS,sub(Id,[A,P|Ss]),Bs):-
 	member(P,PS)
+	% Backstop to avoid cyclicity until ordering constraints
+	% are properly implemented.
+	,P \= A
 	,metarule_instance(Id,[A,P|Ss],As,[_Hs|Bs]).
 metasubstitution([A|As],PS,sub(Id,[A,P1,P2|Ss]),Bs):-
 	member(P1,PS)
 	,member(P2,PS)
+	,P1 \= A
+	,P2 \= A
 	,metarule_instance(Id,[A,P1,P2|Ss],_Fs,[[A|As]|Bs]).
 
 
@@ -200,7 +219,13 @@ project_metasub(sub(Id,Ss),H:-Ps):-
 	,M =.. [F,Id,Ss,_Fs,Bs]
 	,M
 	,project_metasub(Bs,[],[H|Ps_])
-	,Ps =.. [,|Ps_].
+	% If the body of the projected metasub is monadic
+	% join it to the head; else, join the literals by ','
+	% then join the resulting compound to the head.
+	,(   Ps_ = [Ps]
+	 ->  true
+	 ;   Ps =.. [,|Ps_]
+	 ).
 
 
 %!	project_metasub(+Literals,+Acc,-Atoms) is det.
