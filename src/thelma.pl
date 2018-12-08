@@ -41,7 +41,8 @@ true.
 learn(Pos,Neg,Prog):-
 	configuration:depth_limits(C,I)
 	,predicate_signature(PS)
-	,depth_level(C,I,C_,_)
+	,depth_level(C,I,C_,I_)
+	,debug(depth,'Clauses: ~w; Invented: ~w',[C_,I_])
 	,prove(0,C_,Pos,PS,[],Ps)
 	,disprove(Neg,Ps)
 	,project_metasubs(Ps, true, Prog).
@@ -79,8 +80,11 @@ prove(I,K,[A|As],PS,Acc,Bind):-
 	,prove(I,K,As,PS,Acc,Bind).
 prove(I,K,[A|As],PS,Acc1,Bind):-
 	member(MS,Acc1)
-	,metasubstitution(A,PS,MS,Bs)
+	,once(metasubstitution(A,PS,MS,Bs))
 	,prove(I,K,Bs,PS,Acc1,Acc2)
+	,! % Very red cut. Stops adding some
+	% redundant clauses- but will it stop
+	% adding necessary ones, also?
 	,prove(I,K,As,PS,Acc2,Bind).
 prove(I,K,[A|As],PS,Acc1,Bind):-
 	metasubstitution(A,PS,MS,Bs)

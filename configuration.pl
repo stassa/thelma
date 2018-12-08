@@ -8,6 +8,9 @@
 
 */
 
+/* Debug levels */
+:-debug(depth). % Debug number of clauses and invented predicates.
+
 
 %!	depth_limits(?Clauses,?Invented) is semidet.
 %
