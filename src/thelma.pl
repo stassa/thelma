@@ -44,7 +44,7 @@ learn(Pos,Neg,Prog):-
 	,depth_level(C,I,C_,I_)
 	,program_signature(I_,T,Po,Co)
 	,debug(depth,'Clauses: ~w; Invented: ~w',[C_,I_])
-	,prove(0,C_,Pos,Po-Co,[],Ps)
+	,prove(C_,Pos,Po-Co,[],Ps)
 	,disprove(Neg,Ps)
 	,project_metasubs(Ps, true, Prog).
 
@@ -99,38 +99,39 @@ invented_symbols(K,T,Ss):-
 target_predicate([[A|_As]|_Es],A).
 
 
-%!	prove(+Depth,+Limit,+Atoms,+Signature,+Acc,-Metasubstitutions)
+%!	prove(+Depth_Limit,+Atoms,+Signature,+Acc,-Metasubstitutions)
 %!	is det.
 %
 %	Prove a list of Atoms and derive a list of Metasubstitutions.
 %
-%	Depth and Limit are the current and maximum depthts,
-%	respectively, for the iterative deepening search.
+%	Depth_Limit is the maximum depth for the iterative deepening
+%	search. More precisely, it's the maximum size of a theory, i.e.
+%	the maximum number of elements in the list Metasubstitutions.
 %
-prove(_,_,[],_,MS,MS_):-
+prove(_,[],_,MS,MS_):-
 	!
 	,reverse(MS,MS_).
-prove(I,K,[A|As],PS-Cs,Acc,Bind):-
+prove(K,[A|As],PS-Cs,Acc,Bind):-
 	background_predicate(A)
 	,!
 	,A_ =.. A
 	,user:call(A_)
-	,prove(I,K,As,PS-Cs,Acc,Bind).
-prove(I,K,[A|As],PS-Cs,Acc1,Bind):-
+	,prove(K,As,PS-Cs,Acc,Bind).
+prove(K,[A|As],PS-Cs,Acc1,Bind):-
 	member(MS,Acc1)
 	,once(metasubstitution(A,PS-Cs,MS,Bs))
-	,prove(I,K,Bs,PS-Cs,Acc1,Acc2)
+	,prove(K,Bs,PS-Cs,Acc1,Acc2)
 	,! % Very red cut. Stops adding some
 	% redundant clauses- but will it stop
 	% adding necessary ones, also?
-	,prove(I,K,As,PS-Cs,Acc2,Bind).
-prove(I,K,[A|As],PS-Cs,Acc1,Bind):-
+	,prove(K,As,PS-Cs,Acc2,Bind).
+prove(K,[A|As],PS-Cs,Acc1,Bind):-
 	metasubstitution(A,PS-Cs,MS,Bs)
 	,abduction(MS,Acc1,Acc2)
-	,succ(I,I_)
-	,I_ =< K
-	,prove(I_,K,Bs,PS-Cs,Acc2,Acc3)
-	,prove(I_,K,As,PS-Cs,Acc3,Bind).
+	,length(Acc2,N)
+	,N =< K
+	,prove(K,Bs,PS-Cs,Acc2,Acc3)
+	,prove(K,As,PS-Cs,Acc3,Bind).
 
 /*?- findall([grandfather,A,B], tiny_kinship:grandfather(A,B), _Gs), prove(1,2,_Gs,[father,parent],[],[Ps]), thelma:project_metasub(Ps,Ps_), numbervars(Ps_).
 Ps = sub(chain, [grandfather, father, parent]),
