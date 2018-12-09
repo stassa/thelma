@@ -1,5 +1,5 @@
 :-module(auxiliaries, [order_constraints/2
-		      ,experiment_data/6
+		      ,experiment_data/5
 		      ,assert_program/2
 		      ,retract_program/2
 		      ,initialise_experiment/0
@@ -164,24 +164,19 @@ unique_indices(O,[c(I/J/K,C)|Ss],Acc,Bind):-
 
 
 
-%!	experiment_data(+Target,-Positive,-Negative,-BK,-Metarules,+Unload)
-%!	is det.
+%!	experiment_data(+Target,-Positive,-Negative,-BK,-Metarules) is
+%!	det.
 %
 %	Data about a Target theory from the current experiment file.
 %
-%	Unload is a boolean that denotes whether to unload the
-%	experiment file after collecting all the required data from it,
-%	or not.
+%	experiment_data/5 expects an experiment file to be loaded into
+%	memory and will fail without warning otherwise.
+%	initialise_experiment/0 should be called before it, and
+%	cleanup_experiment/0 after it if cleanup is required between
+%	experiments.
 %
-%	@tbd This should not load and unload the experiment file.
-%	initialise_experiment/0 and cleanup_experiment/0 should be the
-%	only points where an experiment file is loaded and unloaded and
-%	every predicate that wants to access terms in the experiment
-%	file must be called between calls to those two.
-%
-experiment_data(T,Pos,Neg,BK,MS,Ul):-
-	configuration:experiment_file(P,M)
-	,use_module(P)
+experiment_data(T,Pos,Neg,BK,MS):-
+	configuration:experiment_file(_,M)
 	,findall([F|As]
 		,(M:positive_example(T,E)
 		 ,E =.. [F|As]
@@ -193,11 +188,7 @@ experiment_data(T,Pos,Neg,BK,MS,Ul):-
 		 )
 		,Neg)
 	,M:background_knowledge(BK)
-	,M:metarules(MS)
-	,(   Ul
-	 ->  unload_file(P)
-	 ;   true
-	 ).
+	,M:metarules(MS).
 
 
 
