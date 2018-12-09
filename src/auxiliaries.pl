@@ -1,6 +1,5 @@
 :-module(auxiliaries, [order_constraints/3
 		      ,experiment_data/6
-		      ,predicate_signature/1
 		      ,assert_program/2
 		      ,retract_program/2
 		      ,initialise_experiment/0
@@ -201,19 +200,6 @@ experiment_data(T,Pos,Neg,BK,MS,Ul):-
 	 ->  unload_file(P)
 	 ;   true
 	 ).
-
-
-
-%!	predicate_signature(+Signature) is det.
-%
-%	Predicate Signature from the current experiment file.
-%
-predicate_signature(PS):-
-	configuration:experiment_file(_,M)
-	,M:background_knowledge(BK)
-	,findall(F
-		,member(F/_A,BK)
-		,PS).
 
 
 

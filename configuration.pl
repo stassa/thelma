@@ -1,4 +1,5 @@
-:-module(configuration, [depth_limits/2
+:-module(configuration, [default_ordering/1
+			,depth_limits/2
 			,experiment_file/2
 			,metarule/4
 			,metarule_functor/1
@@ -10,6 +11,17 @@
 
 /* Debug levels */
 :-debug(depth). % Debug number of clauses and invented predicates.
+
+
+%!	default_ordering(?Order) is semidet.
+%
+%	The default for automatically assigned interval ordering.
+%
+%	Order is one of [higher,lower] and determines what to do when a
+%	constant is assigned multiple indexings in the process of
+%	automatically determining its interval ordering.
+%
+default_ordering(lower).
 
 
 %!	depth_limits(?Clauses,?Invented) is semidet.

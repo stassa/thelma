@@ -40,12 +40,10 @@ true.
 %
 learn(Pos,Neg,Prog):-
 	configuration:depth_limits(C,I)
-	,predicate_signature(PS)
 	,depth_level(C,I,C_,I_)
-	,invented_symbols(I_,Pos,Ss)
-	,append(PS,Ss,PS_)
+	,program_signature(I_,Pos,Po,Co)
 	,debug(depth,'Clauses: ~w; Invented: ~w',[C_,I_])
-	,prove(0,C_,Pos,PS_,[],Ps)
+	,prove(0,C_,Pos,Po-Co,[],Ps)
 	,disprove(Neg,Ps)
 	,project_metasubs(Ps, true, Prog).
 
@@ -63,6 +61,23 @@ depth_level(C,I,C_,I_):-
 	,I_ < C_.
 
 
+%!	program_signature(+Invented,+Examples,-Predicates,-Constants) is
+%!	det.
+%
+%	Determine the predicate signature for a target program.
+%
+%	Determines the predicate signature and also the ordering of
+%	Predicates and Constants. It's just that the predicate ordering,
+%	in list Predicates, is also the predicate signature.
+%
+program_signature(K,Pos,Ps,Cs):-
+	configuration:default_ordering(D)
+	,order_constraints(Ps_,Cs,D)
+	,invented_symbols(K,Pos,Ss)
+	,target_predicate(Pos,T)
+	,append([T|Ss],Ps_,Ps).
+
+
 %!	invented_symbols(+Symbols,+Examples,-Invented) is det.
 %
 %	Create new symbols for Invented predicates.
@@ -73,6 +88,16 @@ invented_symbols(K,[[S|_As]|_],Ss):-
 		,atomic_list_concat([S,I],'_',S_)
 		)
 	       ,Ss).
+
+
+%!	target_predicate(+Examples,-Target) is det.
+%
+%	Determine the Target predicate from a set of Examples.
+%
+%	Makes no attempt to check that Examples are all atoms of the
+%	same predicate, etc.
+%
+target_predicate([[A|_As]|_Es],A).
 
 
 %!	prove(+Depth,+Limit,+Atoms,+Signature,+Acc,-Metasubstitutions)
@@ -86,27 +111,27 @@ invented_symbols(K,[[S|_As]|_],Ss):-
 prove(_,_,[],_,MS,MS_):-
 	!
 	,reverse(MS,MS_).
-prove(I,K,[A|As],PS,Acc,Bind):-
+prove(I,K,[A|As],PS-Cs,Acc,Bind):-
 	background_predicate(A)
 	,!
 	,A_ =.. A
 	,user:call(A_)
-	,prove(I,K,As,PS,Acc,Bind).
-prove(I,K,[A|As],PS,Acc1,Bind):-
+	,prove(I,K,As,PS-Cs,Acc,Bind).
+prove(I,K,[A|As],PS-Cs,Acc1,Bind):-
 	member(MS,Acc1)
-	,once(metasubstitution(A,PS,MS,Bs))
-	,prove(I,K,Bs,PS,Acc1,Acc2)
+	,once(metasubstitution(A,PS-Cs,MS,Bs))
+	,prove(I,K,Bs,PS-Cs,Acc1,Acc2)
 	,! % Very red cut. Stops adding some
 	% redundant clauses- but will it stop
 	% adding necessary ones, also?
-	,prove(I,K,As,PS,Acc2,Bind).
-prove(I,K,[A|As],PS,Acc1,Bind):-
-	metasubstitution(A,PS,MS,Bs)
+	,prove(I,K,As,PS-Cs,Acc2,Bind).
+prove(I,K,[A|As],PS-Cs,Acc1,Bind):-
+	metasubstitution(A,PS-Cs,MS,Bs)
 	,abduction(MS,Acc1,Acc2)
 	,succ(I,I_)
 	,I_ =< K
-	,prove(I_,K,Bs,PS,Acc2,Acc3)
-	,prove(I_,K,As,PS,Acc3,Bind).
+	,prove(I_,K,Bs,PS-Cs,Acc2,Acc3)
+	,prove(I_,K,As,PS-Cs,Acc3,Bind).
 
 /*?- findall([grandfather,A,B], tiny_kinship:grandfather(A,B), _Gs), prove(1,2,_Gs,[father,parent],[],[Ps]), thelma:project_metasub(Ps,Ps_), numbervars(Ps_).
 Ps = sub(chain, [grandfather, father, parent]),
@@ -136,18 +161,39 @@ background_predicate([F|Args]):-
 %	bound to first-order predicate terms from the predicate
 %	Signature.
 %
-metasubstitution([A|As],PS,sub(Id,[A,P|Ss]),Bs):-
+metasubstitution([A|As],PS-_Cs,sub(Id,[A,P|Ss]),Bs):-
 	member(P,PS)
-	% Backstop to avoid cyclicity until ordering constraints
-	% are properly implemented.
-	,P \= A
+	,order_test(A,P,PS)
 	,metarule_instance(Id,[A,P|Ss],As,[_Hs|Bs]).
-metasubstitution([A|As],PS,sub(Id,[A,P1,P2|Ss]),Bs):-
+metasubstitution([A|As],PS-_Cs,sub(Id,[A,P1,P2|Ss]),Bs):-
 	member(P1,PS)
 	,member(P2,PS)
-	,P1 \= A
-	,P2 \= A
+	,order_test(A,P1,PS)
+	,order_test(A,P2,PS)
 	,metarule_instance(Id,[A,P1,P2|Ss],_Fs,[[A|As]|Bs]).
+
+
+%!	order_test(+Term1,+Term2,+Ordering) is det.
+%
+%	True when Term1 is above Term2 in the given Ordering.
+%
+order_test(A,B,Cs):-
+	A \= B
+	,right_scan(A, Cs, Rs)
+	,right_scan(B, Rs, _).
+
+%!	right_scan(+X,+Ls,-Ys) is det.
+%
+%	Scan a list left-to-right until an element is found.
+%
+%	Ys is the list that remains when X and all elements before it
+%	are removed from Ls.
+%
+right_scan(A,[A|Cs],Cs):-
+	!.
+right_scan(A,[_|Cs],Acc):-
+	right_scan(A,Cs,Acc).
+
 
 
 %!	abduction(+Metasubstitution,+Store,-Adbduced) is det.
