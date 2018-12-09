@@ -40,8 +40,9 @@ true.
 %
 learn(Pos,Neg,Prog):-
 	configuration:depth_limits(C,I)
+	,target_predicate(Pos,T)
 	,depth_level(C,I,C_,I_)
-	,program_signature(I_,Pos,Po,Co)
+	,program_signature(I_,T,Po,Co)
 	,debug(depth,'Clauses: ~w; Invented: ~w',[C_,I_])
 	,prove(0,C_,Pos,Po-Co,[],Ps)
 	,disprove(Neg,Ps)
@@ -70,22 +71,20 @@ depth_level(C,I,C_,I_):-
 %	Predicates and Constants. It's just that the predicate ordering,
 %	in list Predicates, is also the predicate signature.
 %
-program_signature(K,Pos,Ps,Cs):-
-	configuration:default_ordering(D)
-	,order_constraints(Ps_,Cs,D)
-	,invented_symbols(K,Pos,Ss)
-	,target_predicate(Pos,T)
+program_signature(K,T,Ps,Cs):-
+	order_constraints(Ps_,Cs)
+	,invented_symbols(K,T,Ss)
 	,append([T|Ss],Ps_,Ps).
 
 
-%!	invented_symbols(+Symbols,+Examples,-Invented) is det.
+%!	invented_symbols(+Symbols,+Target,-Invented) is det.
 %
 %	Create new symbols for Invented predicates.
 %
-invented_symbols(K,[[S|_As]|_],Ss):-
+invented_symbols(K,T,Ss):-
 	findall(S_
 	       ,(between(1,K,I)
-		,atomic_list_concat([S,I],'_',S_)
+		,atomic_list_concat([T,I],'_',S_)
 		)
 	       ,Ss).
 

@@ -1,4 +1,4 @@
-:-module(auxiliaries, [order_constraints/3
+:-module(auxiliaries, [order_constraints/2
 		      ,experiment_data/6
 		      ,assert_program/2
 		      ,retract_program/2
@@ -50,10 +50,6 @@
 %	Explanation
 %	-----------
 %
-%	Default must be one of [lower, higher], denoting whether
-%	constants found in multiple predicates are ordered according to
-%	their higher, or lower possible ordering.
-%
 %	Predicates is a list representing an ordered sequence of unique
 %	predicate symbols {P1, P2,... Pn} where each Pi is the symbol of
 %	a predicate in the background knowledge and Pj is above Pk in
@@ -91,14 +87,16 @@
 %	When a constant appears multiple times in different atoms of
 %	possibly different predicates, it is assigned multiple
 %	indexings. This is resolved by taking into account the
-%	value of Default. If Default is lower, the indexing resulting in
-%	the lowest possible ordering is used to determine the order of
-%	the constant in Constants. If Default is higher, the highest
-%	ordering is used instead.
+%	value of the configuration option default_ordering/1. If that is
+%	set to "lower", the indexing resulting in the lowest possible
+%	ordering is used to determine the order of the constant in
+%	Constants. If it is set to "higher", the highest ordering is
+%	used instead.
 %
-order_constraints(Ps,Cs,D):-
-	must_be(oneof([lower,higher]),D)
-	,configuration:experiment_file(_P,M)
+order_constraints(Ps,Cs):-
+	configuration:experiment_file(_P,M)
+	,configuration:default_ordering(D)
+	,must_be(oneof([lower,higher]),D)
 	,M:background_knowledge(BK)
 	,predicate_order(BK,Ps)
 	,constants_indexing(M,BK,Is)
