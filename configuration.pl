@@ -46,7 +46,7 @@ experiment_file('data/tiny_kinship.pl',tiny_kinship).
 %	number. It's only used as a reference, to find the metarule int
 %	he dynamic database.
 %
-metarule(projection, [P,Q], [X], mec(P,X,X) :- mec(Q,X)).
+metarule(projection, [P,Q], [X,X], mec(P,X,X) :- mec(Q,X)).
 metarule(identity, [P,Q], [X,Y], mec(P,X,Y) :- mec(Q,X,Y)).
 metarule(inverse, [P,Q], [X,Y], mec(P,X,Y) :- mec(Q,Y,X)).
 metarule(chain, [P,Q,R], [X,Y,Z], (mec(P,X,Y) :- mec(Q,X,Z), mec(R,Z,Y))).
