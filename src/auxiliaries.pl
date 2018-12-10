@@ -125,18 +125,32 @@ predicate_order(BK,Ps):-
 %	Index Background constants according to their declaration order.
 %
 constants_indexing(M,BK,Is):-
-	findall([c(I/1/J,A1),c(I/2/J,A2)]
+	findall(ITs
 	       ,(nth1(I,BK,F/A)
 		,functor(T,F,A)
 		,findall(T
 			,M:call(T)
 			,Ts)
-		,nth1(J,Ts,Ti)
-		,Ti =.. [F,A1,A2]
+		,nth1(K,Ts,Ti)
+		,Ti =.. Ti_
+		,indexing_terms(F,I,K,Ti_,ITs)
 		)
 	       ,Cs_)
 	,flatten(Cs_, Cs_flat)
 	,sort(2,@=<,Cs_flat,Is).
+
+
+%!	indexing_terms(+Symbol,+Predicate,+Atom,+Term,-Indexings) is
+%!	det.
+%
+%	Assing an indexing to one or two arguments of a Term.
+%
+%	Predicate and Atom are the predicate rank and the index of its
+%	current atom, used to assign an indexing to its arguments, as
+%	detailed in order_constraints/2.
+%
+indexing_terms(F,I,K,[F,A1,A2],[c(I/1/K,A1),c(I/2/K,A2)]).
+indexing_terms(F,I,K,[F,A1],[c(I/1/K,A1)]).
 
 
 %!	unique_indices(+Indices,+Order,-Unique) is det.
