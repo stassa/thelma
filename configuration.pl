@@ -52,7 +52,9 @@ metarule(projection, [P,Q], [X,X], mec(P,X,X) :- mec(Q,X)).
 metarule(identity, [P,Q], [X,Y], mec(P,X,Y) :- mec(Q,X,Y)).
 metarule(inverse, [P,Q], [X,Y], mec(P,X,Y) :- mec(Q,Y,X)).
 metarule(chain, [P,Q,R], [X,Y,Z], (mec(P,X,Y) :- mec(Q,X,Z), mec(R,Z,Y))).
-metarule(tailrec, [P,Q,R], [X,Y,Z], (mec(P,X,Y) :- mec(Q,X,Z), mec(R,Z,Y))).
+% Chain without a second-order constraint.
+metarule(unchain, [P,Q,R], [X,Y,Z], (mec(P,X,Y) :- mec(Q,X,Z), mec(R,Z,Y))).
+metarule(tailrec, [P,Q], [X,Y,Z], (mec(P,X,Y) :- mec(Q,X,Z), mec(P,Z,Y))).
 
 
 %!	metarule_functor(?Functor) is semidet.
@@ -71,4 +73,6 @@ order_constraints(projection,[P,Q],_Fs,[P>Q],[]).
 order_constraints(inverse,[P,Q],_Fs,[P>Q],[]).
 order_constraints(identity,[P,Q],_Fs,[P>Q],[]).
 order_constraints(chain,[P,Q,R],_Fs,[P>Q,P>R],[]).
-order_constraints(tailrec,[_P,_Q,_R],[X,Y,Z],[],[X>Z,Z>Y]).
+order_constraints(unchain,_Ss,[X,Y,Z],[],[X>Z,Z>Y]).
+order_constraints(tailrec,_Ss,[X,Y,Z],[],[X>Z,Z>Y]).
+
