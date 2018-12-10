@@ -13,11 +13,12 @@ user:file_search_path(output, project_root(output)).
 :-use_module(src(thelma)).
 
 edit_files:-
-	edit(project_root(load_project))
+	configuration:experiment_file(P,_)
+	,edit(project_root(load_project))
 	,edit(project_root(configuration))
 	,edit(src(auxiliaries))
 	,edit(src(thelma))
-	,edit(data(tiny_kinship))
+	,edit(P)
 	.
 :-edit_files.
 
