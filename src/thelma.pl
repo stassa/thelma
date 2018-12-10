@@ -161,16 +161,16 @@ background_predicate([F|Args]):-
 %	bound to first-order predicate terms from the predicate
 %	Signature.
 %
-metasubstitution([A|As],PS-_Cs,sub(Id,[A,P|Ss]),Bs):-
+metasubstitution([A|As],PS-_Cs,sub(Id,[A,P]),Bs):-
 	member(P,PS)
 	,order_test(A,P,PS)
-	,metarule_instance(Id,[A,P|Ss],As,[_Hs|Bs]).
-metasubstitution([A|As],PS-_Cs,sub(Id,[A,P1,P2|Ss]),Bs):-
+	,metarule_instance(Id,[A,P],As,[_Hs|Bs]).
+metasubstitution([A|As],PS-_Cs,sub(Id,[A,P1,P2]),Bs):-
 	member(P1,PS)
 	,member(P2,PS)
 	,order_test(A,P1,PS)
 	,order_test(A,P2,PS)
-	,metarule_instance(Id,[A,P1,P2|Ss],_Fs,[[A|As]|Bs]).
+	,metarule_instance(Id,[A,P1,P2],_Fs,[[A|As]|Bs]).
 
 
 %!	order_test(+Term1,+Term2,+Ordering) is det.
