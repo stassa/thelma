@@ -149,6 +149,11 @@ constants_indexing(M,BK,Is):-
 %	current atom, used to assign an indexing to its arguments, as
 %	detailed in order_constraints/2.
 %
+indexing_terms(F,I,K,[F,A1,A2],[c(I/1/K,A1),c(I/2/K,[])]):-
+% Specifically meant to deal with DCGs where A1 may be a
+% difference list and A2 a free var, e.g. ['A',[a|X],Y].
+	var(A2)
+	,!.
 indexing_terms(F,I,K,[F,A1,A2],[c(I/1/K,A1),c(I/2/K,A2)]).
 indexing_terms(F,I,K,[F,A1],[c(I/1/K,A1)]).
 
