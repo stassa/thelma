@@ -1,4 +1,4 @@
-:-module(auxiliaries, [order_constraints/2
+:-module(auxiliaries, [order_constraints/3
 		      ,experiment_data/5
 		      ,assert_program/2
 		      ,retract_program/2
@@ -17,9 +17,12 @@
 :- dynamic user:'$metarule'/4.
 
 
-%!	order_constraints(-Predicates,-Constants,+Default) is det.
+%!	order_constraints(+Target,-Predicates,-Constants,+Default) is
+%!	det.
 %
 %	Assign an automatic ordering to the Herbrand base.
+%
+%	Target is the symbol and arity of the predicate to be learned.
 %
 %	Motivation
 %	----------
@@ -35,7 +38,7 @@
 %	The relevant ordering is instead automatically determined a) by
 %	the order in which predicates are declaed as background
 %	knowledge (by including their symbols and aritities in the list
-%	given as the first argument of the background_knowledge/1
+%	given as the second argument of the background_knowledge/2
 %	predicate), b) in the order in which atoms of background
 %	predicates are generated, or appear in the source file
 %	(depending on whether a predicate is intentionally or
@@ -65,7 +68,7 @@
 %	terms in an experiment file, provided by the user. Specifically:
 %
 %	a) Each predicate is assigned a rank equal to its position in
-%	the list in the first argument of background_knowledge/1,
+%	the list in the second argument of background_knowledge/2,
 %	defined in the experiment file.
 %
 %	b) Each constant C is assigned one or more indexing terms I/J/K,
@@ -93,11 +96,11 @@
 %	Constants. If it is set to "higher", the highest ordering is
 %	used instead.
 %
-order_constraints(Ps,Cs):-
+order_constraints(T,Ps,Cs):-
 	configuration:experiment_file(_P,M)
 	,configuration:default_ordering(D)
 	,must_be(oneof([lower,higher]),D)
-	,M:background_knowledge(BK)
+	,M:background_knowledge(T,BK)
 	,predicate_order(BK,Ps)
 	,constants_indexing(M,BK,Is)
 	,unique_indices(Is,Is_,D)
@@ -188,6 +191,9 @@ unique_indices(O,[c(I/J/K,C)|Ss],Acc,Bind):-
 %
 %	Data about a Target theory from the current experiment file.
 %
+%	Target is the predicate indicator of the predicate to be
+%	learned.
+%
 %	experiment_data/5 expects an experiment file to be loaded into
 %	memory and will fail without warning otherwise.
 %	initialise_experiment/0 should be called before it, and
@@ -206,8 +212,8 @@ experiment_data(T,Pos,Neg,BK,MS):-
 		 ,E =.. [F|As]
 		 )
 		,Neg)
-	,M:background_knowledge(BK)
-	,M:metarules(MS).
+	,M:background_knowledge(T,BK)
+	,M:metarules(T,MS).
 
 
 

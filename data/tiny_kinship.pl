@@ -1,7 +1,7 @@
-:-module(tiny_kinship, [background_knowledge/1
+:-module(tiny_kinship, [background_knowledge/2
+		       ,metarules/2
 		       ,positive_example/2
 		       ,negative_example/2
-		       ,metarules/1
 		       ,father/2
 		       ,mother/2
 		       ,parent/2
@@ -9,19 +9,14 @@
 		       ,female/1
 		       ]).
 
-% Learn father/2
-%background_knowledge([parent/2,male/1]).
-% Learn grandfather/2
-background_knowledge([father/2,mother/2]).
-% Learn male/1
-%background_knowledge([male/1,female/1]).
+background_knowledge(father/2,[parent/2,male/1]).
+background_knowledge(grandfather/2,[father/2,mother/2]).
+background_knowledge(male/2,[male/1,female/1]).
 
 % Learn father/2
-%metarules([chain,projection]).
-% Learn grandfather/2
-metarules([chain,inverse]).
-% Learn male/1
-%metarules([identity,projection]).
+metarules(father/2,[chain,projection]).
+metarules(grandfather/2,[chain,inverse]).
+metarules(male/2,[identity,projection]).
 
 father(stathis, kostas).
 father(stefanos, dora).
@@ -45,18 +40,18 @@ female(stassa).
 female(alexandra).
 female(paraskevi).
 
-positive_example(male,male(A,A)):-
-	male(A).
-positive_example(father,father(A,B)):-
-	father(A,B).
-positive_example(grandfather,grandfather(A,B)):-
+positive_example(grandfather/2,grandfather(A,B)):-
 	grandfather(A,B).
+positive_example(father/2,father(A,B)):-
+	father(A,B).
+positive_example(male/2,male(A,A)):-
+	male(A).
 
-negative_example(grandfather,grandfather(A,B)):-
+negative_example(grandfather/2,grandfather(A,B)):-
 	grandmother(A,B).
-negative_example(father,father(A,B)):-
+negative_example(father/2,father(A,B)):-
 	mother(A,B).
-negative_example(male,male(A,A)):-
+negative_example(male/2,male(A,A)):-
 	female(A).
 
 % Target theory.

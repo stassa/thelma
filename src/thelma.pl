@@ -44,7 +44,7 @@ learn(Pos,Neg,Prog):-
 	,depth_level(C,I,C_,I_)
 	,program_signature(I_,T,Po,Co)
 	,debug(depth,'Clauses: ~w; Invented: ~w',[C_,I_])
-	,prove(C_,Pos,Po-Co,[],Ps)
+	,prove(T,C_,Pos,Po-Co,[],Ps)
 	,disprove(Neg,Ps)
 	,project_metasubs(Ps, true, Prog_)
 	,sort(Prog_,Prog).
@@ -63,7 +63,7 @@ depth_level(C,I,C_,I_):-
 	,I_ < C_.
 
 
-%!	program_signature(+Invented,+Examples,-Predicates,-Constants) is
+%!	program_signature(+Invented,+Target,-Predicates,-Constants) is
 %!	det.
 %
 %	Determine the predicate signature for a target program.
@@ -72,13 +72,13 @@ depth_level(C,I,C_,I_):-
 %	Predicates and Constants. It's just that the predicate ordering,
 %	in list Predicates, is also the predicate signature.
 %
-program_signature(K,T,Ps,Cs):-
-	order_constraints(Ps_,Cs)
-	,invented_symbols(K,T,Ss)
-	,append([T|Ss],Ps_,Ps).
+program_signature(K,F/A,Ps,Cs):-
+	order_constraints(F/A,Ps_,Cs)
+	,invented_symbols(K,F,Ss)
+	,append([F|Ss],Ps_,Ps).
 
 
-%!	invented_symbols(+Symbols,+Target,-Invented) is det.
+%!	invented_symbols(+Symbols,+Target_Symbol,-Invented) is det.
 %
 %	Create new symbols for Invented predicates.
 %
@@ -94,13 +94,16 @@ invented_symbols(K,T,Ss):-
 %
 %	Determine the Target predicate from a set of Examples.
 %
+%	Target is a predicate indicator.
+%
 %	Makes no attempt to check that Examples are all atoms of the
 %	same predicate, etc.
 %
-target_predicate([[A|_As]|_Es],A).
+target_predicate([[F|Args]|_Es],F/A):-
+	length(Args,A).
 
 
-%!	prove(+Depth_Limit,+Atoms,+Signature,+Acc,-Metasubstitutions)
+%!	prove(+Target,+Depth_Limit,+Atoms,+Signature,+Acc,-Metasubstitutions)
 %!	is det.
 %
 %	Prove a list of Atoms and derive a list of Metasubstitutions.
@@ -109,30 +112,30 @@ target_predicate([[A|_As]|_Es],A).
 %	search. More precisely, it's the maximum size of a theory, i.e.
 %	the maximum number of elements in the list Metasubstitutions.
 %
-prove(_,[],_,MS,MS_):-
+prove(_,_,[],_,MS,MS_):-
 	!
 	,reverse(MS,MS_).
-prove(K,[A|As],PS-Cs,Acc,Bind):-
-	background_predicate(A)
+prove(T,K,[A|As],PS-Cs,Acc,Bind):-
+	background_predicate(T,A)
 	,!
 	,A_ =.. A
 	,user:call(A_)
-	,prove(K,As,PS-Cs,Acc,Bind).
-prove(K,[A|As],PS-Cs,Acc1,Bind):-
+	,prove(T,K,As,PS-Cs,Acc,Bind).
+prove(T,K,[A|As],PS-Cs,Acc1,Bind):-
 	member(MS,Acc1)
-	,once(metasubstitution(A,PS-Cs,MS,Bs))
-	,prove(K,Bs,PS-Cs,Acc1,Acc2)
+	,once(metasubstitution(T,A,PS-Cs,MS,Bs))
+	,prove(T,K,Bs,PS-Cs,Acc1,Acc2)
 	,! % Very red cut. Stops adding some
 	% redundant clauses- but will it stop
 	% adding necessary ones, also?
-	,prove(K,As,PS-Cs,Acc2,Bind).
-prove(K,[A|As],PS-Cs,Acc1,Bind):-
-	metasubstitution(A,PS-Cs,MS,Bs)
+	,prove(T,K,As,PS-Cs,Acc2,Bind).
+prove(T,K,[A|As],PS-Cs,Acc1,Bind):-
+	metasubstitution(T,A,PS-Cs,MS,Bs)
 	,abduction(MS,Acc1,Acc2)
 	,length(Acc2,N)
 	,N =< K
-	,prove(K,Bs,PS-Cs,Acc2,Acc3)
-	,prove(K,As,PS-Cs,Acc3,Bind).
+	,prove(T,K,Bs,PS-Cs,Acc2,Acc3)
+	,prove(T,K,As,PS-Cs,Acc3,Bind).
 
 /*?- findall([grandfather,A,B], tiny_kinship:grandfather(A,B), _Gs), prove(1,2,_Gs,[father,parent],[],[Ps]), thelma:project_metasub(Ps,Ps_), numbervars(Ps_).
 Ps = sub(chain, [grandfather, father, parent]),
@@ -142,18 +145,19 @@ Ps_ =  (grandfather(A, B):-parent(A, C), parent(C, B)) ;
 false.*/
 
 
-%!	background_predicate(+Atom) is det.
+%!	background_predicate(+Target,+Atom) is det.
 %
 %	True when Atom is an atom of a background knowledge predicate.
 %
-background_predicate([F|Args]):-
+background_predicate(T,[F|Args]):-
 	configuration:experiment_file(_P,M)
-	,M:background_knowledge(BK)
+	,M:background_knowledge(T,BK)
 	,length(Args, A)
 	,member(F/A, BK).
 
 
-%!	metasubstitution(+Atom,+Signature,+Metasub,-Body) is det.
+%!	metasubstitution(+Target,+Atom,+Signature,+Metasub,-Body) is
+%!	det.
 %
 %	Perform a second-order metasubstitution.
 %
@@ -162,13 +166,13 @@ background_predicate([F|Args]):-
 %	bound to first-order predicate terms from the predicate
 %	Signature.
 %
-metasubstitution([A|As],PS-Cs,sub(Id,[A,P]),Bs):-
+metasubstitution(T,[A|As],PS-Cs,sub(Id,[A,P]),Bs):-
 	member(P,PS)
-	,metarule_instance(Id,[A,P],As,PS-Cs,[_Hs|Bs]).
-metasubstitution([A|As],PS-Cs,sub(Id,[A,P1,P2]),Bs):-
+	,metarule_instance(T,Id,[A,P],As,PS-Cs,[_Hs|Bs]).
+metasubstitution(T,[A|As],PS-Cs,sub(Id,[A,P1,P2]),Bs):-
 	member(P1,PS)
 	,member(P2,PS)
-	,metarule_instance(Id,[A,P1,P2],_Fs,PS-Cs,[[A|As]|Bs]).
+	,metarule_instance(T,Id,[A,P1,P2],_Fs,PS-Cs,[[A|As]|Bs]).
 
 
 %!	abduction(+Metasubstitution,+Store,-Adbduced) is det.
@@ -179,17 +183,18 @@ abduction(MS,Prog,[MS|Prog]):-
 	\+ memberchk(MS, Prog).
 
 
-%!	metarule_instanece(+Id,+Second_order,+First_order,-Rule) is det.
+%!	metarule_instanece(+Target,+Id,+Second_order,+First_order,-Rule)
+%!	is det.
 %
 %	A Generator of metarule instances.
 %
-metarule_instance(Id,Ss,Fs,PS-CS,Bs):-
+metarule_instance(T,Id,Ss,Fs,PS-CS,Bs):-
 	configuration:experiment_file(_P,M)
 	,metarule_functor(F)
-	,M:metarules(Ms)
+	,M:metarules(T,Ms)
 	,member(Id,Ms)
-	,T =.. [F,Id,Ss,Fs,Bs]
-	,user:call(T)
+	,MR =.. [F,Id,Ss,Fs,Bs]
+	,user:call(MR)
 	,configuration:order_constraints(Id,Ss,Fs,STs,FTs)
 	,order_tests(PS,CS,STs,FTs).
 
