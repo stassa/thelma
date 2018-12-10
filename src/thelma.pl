@@ -46,7 +46,8 @@ learn(Pos,Neg,Prog):-
 	,debug(depth,'Clauses: ~w; Invented: ~w',[C_,I_])
 	,prove(C_,Pos,Po-Co,[],Ps)
 	,disprove(Neg,Ps)
-	,project_metasubs(Ps, true, Prog).
+	,project_metasubs(Ps, true, Prog_)
+	,sort(Prog_,Prog).
 
 
 %!	depth_level(+Clause_Max,+Invented_Max,-Clauses,-Invented) is
