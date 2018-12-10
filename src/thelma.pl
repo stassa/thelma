@@ -162,39 +162,13 @@ background_predicate([F|Args]):-
 %	bound to first-order predicate terms from the predicate
 %	Signature.
 %
-metasubstitution([A|As],PS-_Cs,sub(Id,[A,P]),Bs):-
+metasubstitution([A|As],PS-Cs,sub(Id,[A,P]),Bs):-
 	member(P,PS)
-	,order_test(A,P,PS)
-	,metarule_instance(Id,[A,P],As,[_Hs|Bs]).
-metasubstitution([A|As],PS-_Cs,sub(Id,[A,P1,P2]),Bs):-
+	,metarule_instance(Id,[A,P],As,PS-Cs,[_Hs|Bs]).
+metasubstitution([A|As],PS-Cs,sub(Id,[A,P1,P2]),Bs):-
 	member(P1,PS)
 	,member(P2,PS)
-	,order_test(A,P1,PS)
-	,order_test(A,P2,PS)
-	,metarule_instance(Id,[A,P1,P2],_Fs,[[A|As]|Bs]).
-
-
-%!	order_test(+Term1,+Term2,+Ordering) is det.
-%
-%	True when Term1 is above Term2 in the given Ordering.
-%
-order_test(A,B,Cs):-
-	A \= B
-	,right_scan(A, Cs, Rs)
-	,right_scan(B, Rs, _).
-
-%!	right_scan(+X,+Ls,-Ys) is det.
-%
-%	Scan a list left-to-right until an element is found.
-%
-%	Ys is the list that remains when X and all elements before it
-%	are removed from Ls.
-%
-right_scan(A,[A|Cs],Cs):-
-	!.
-right_scan(A,[_|Cs],Acc):-
-	right_scan(A,Cs,Acc).
-
+	,metarule_instance(Id,[A,P1,P2],_Fs,PS-Cs,[[A|As]|Bs]).
 
 
 %!	abduction(+Metasubstitution,+Store,-Adbduced) is det.
@@ -209,13 +183,61 @@ abduction(MS,Prog,[MS|Prog]):-
 %
 %	A Generator of metarule instances.
 %
-metarule_instance(Id,Ss,Fs,Bs):-
+metarule_instance(Id,Ss,Fs,PS-CS,Bs):-
 	configuration:experiment_file(_P,M)
 	,metarule_functor(F)
 	,M:metarules(Ms)
 	,member(Id,Ms)
 	,T =.. [F,Id,Ss,Fs,Bs]
-	,user:call(T).
+	,user:call(T)
+	,configuration:order_constraints(Id,Ss,Fs,STs,FTs)
+	,order_tests(PS,CS,STs,FTs).
+
+
+%!	order_tests(+Predicates,+Constants,+First_Order,+Second_Order)
+%!	is det.
+%
+%	Test the ordering constraints associated with a metarule.
+%
+order_tests(PS,_,STs,_):-
+	STs \= []
+	,forall(member(A>B,STs)
+	      ,above(A,B,PS)
+	      )
+	,!.
+order_tests(_,CS,_,FTs):-
+	FTs \= []
+	,forall(member(A>B,FTs)
+	      ,above(A,B,CS)
+	      ).
+
+
+%!	above(+Term1,+Term2,+Ordering) is det.
+%
+%	True when Term1 is above Term2 in the given Ordering.
+%
+above(A,B,Cs):-
+% Remember- if either A or B is a variable
+% this test will succeed.
+	A \== B
+	,right_scan(A, Cs, Rs)
+	,right_scan(B, Rs, _).
+
+%!	right_scan(+X,+Ls,-Ys) is det.
+%
+%	Scan a list left-to-right until an element is found.
+%
+%	Ys is the list that remains when X and all elements before it
+%	are removed from Ls.
+%
+right_scan(A,[B|Cs],Cs):-
+% Avoid binding a variable in A or B.
+	unifiable(A,B,_)
+	,!.
+right_scan(A,[_|Cs],Acc):-
+	right_scan(A,Cs,Acc).
+
+
 
 
 %!	disprove(+Program,+Metasubs) is det.

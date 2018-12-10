@@ -3,6 +3,7 @@
 			,experiment_file/2
 			,metarule/4
 			,metarule_functor/1
+			,order_constraints/5
 			]).
 
 /** <module> Configuration options for Thelma.
@@ -36,6 +37,7 @@ depth_limits(4,3).
 %	The Path and Module name of an experiment file.
 %
 experiment_file('data/tiny_kinship.pl',tiny_kinship).
+%experiment_file('data/anbn.pl',anbn).
 
 
 %!	metarule(?Name,?Second_order,?First_order,?Literals) is semidet.
@@ -50,6 +52,7 @@ metarule(projection, [P,Q], [X,X], mec(P,X,X) :- mec(Q,X)).
 metarule(identity, [P,Q], [X,Y], mec(P,X,Y) :- mec(Q,X,Y)).
 metarule(inverse, [P,Q], [X,Y], mec(P,X,Y) :- mec(Q,Y,X)).
 metarule(chain, [P,Q,R], [X,Y,Z], (mec(P,X,Y) :- mec(Q,X,Z), mec(R,Z,Y))).
+metarule(tailrec, [P,Q,R], [X,Y,Z], (mec(P,X,Y) :- mec(Q,X,Z), mec(R,Z,Y))).
 
 
 %!	metarule_functor(?Functor) is semidet.
@@ -57,3 +60,15 @@ metarule(chain, [P,Q,R], [X,Y,Z], (mec(P,X,Y) :- mec(Q,X,Z), mec(R,Z,Y))).
 %	Functor for the internal representation of metarules.
 %
 metarule_functor('$metarule').
+
+
+%!	order_constraints(+M,+Second_Order,+First_Order,+SO_Constraints,+FO_Constraints)
+%!	is det.
+%
+%	A set of order constraints for a Metarule.
+%
+order_constraints(projection,[P,Q],_Fs,[P>Q],[]).
+order_constraints(inverse,[P,Q],_Fs,[P>Q],[]).
+order_constraints(identity,[P,Q],_Fs,[P>Q],[]).
+order_constraints(chain,[P,Q,R],_Fs,[P>Q,P>R],[]).
+order_constraints(tailrec,[_P,_Q,_R],[X,Y,Z],[],[X>Z,Z>Y]).
