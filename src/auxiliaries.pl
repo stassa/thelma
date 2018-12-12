@@ -257,9 +257,10 @@ initialise_experiment:-
 %	Unload the currently configured experiment file.
 %
 cleanup_experiment:-
-	configuration:experiment_file(P,_M)
+	configuration:experiment_file(P,M)
 	,unload_file(P)
-	,cleanup_metarules.
+	,cleanup_metarules
+	,abolish_experiment_file_interface(M).
 
 
 %!	transform_metarules
@@ -334,6 +335,21 @@ cleanup_metarules:-
 	,functor(T,F,4)
 	,user:retractall(T).
 
+
+%!	abolish_experiment_file_interface(+Module) is det.
+%
+%	Abolish interface predicates from an experiment file Module.
+%
+%	Meant to make it possible to load and unload different
+%	experiment files in the same Prolog session without import
+%	permission errors.
+%
+abolish_experiment_file_interface(M):-
+	forall(member(F/A, [background_knowledge/2
+			   ,metarules/2
+			   ,positive_example/1
+			   ,negative_example/1])
+	       ,abolish(M:F/A)).
 
 
 %!	print_clauses(+Clauses) is det.
