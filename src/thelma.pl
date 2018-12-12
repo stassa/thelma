@@ -74,18 +74,18 @@ depth_level(C,I,C_,I_):-
 %
 program_signature(K,F/A,Ps,Cs):-
 	order_constraints(F/A,Ps_,Cs)
-	,invented_symbols(K,F,Ss)
-	,append([F|Ss],Ps_,Ps).
+	,invented_symbols(K,F/A,Ss)
+	,append([F/A|Ss],Ps_,Ps).
 
 
 %!	invented_symbols(+Symbols,+Target_Symbol,-Invented) is det.
 %
 %	Create new symbols for Invented predicates.
 %
-invented_symbols(K,T,Ss):-
-	findall(S_
+invented_symbols(K,F/A,Ss):-
+	findall(S_/A
 	       ,(between(1,K,I)
-		,atomic_list_concat([T,I],'_',S_)
+		,atomic_list_concat([F,I],'_',S_)
 		)
 	       ,Ss).
 
@@ -166,13 +166,23 @@ background_predicate(T,[F|Args]):-
 %	bound to first-order predicate terms from the predicate
 %	Signature.
 %
-metasubstitution(T,[A|As],PS-Cs,sub(Id,[A,P]),Bs):-
+metasubstitution(T,[A|As],PS-Cs,sub(Id,[A/N,P]),Bs):-
 	member(P,PS)
-	,metarule_instance(T,Id,[A,P],As,PS-Cs,[_Hs|Bs]).
-metasubstitution(T,[A|As],PS-Cs,sub(Id,[A,P1,P2]),Bs):-
+	,atom_symbol_arity([A|As],A/N)
+	,metarule_instance(T,Id,[A/N,P],As,PS-Cs,[_Hs|Bs]).
+metasubstitution(T,[A|As],PS-Cs,sub(Id,[A/N,P1,P2]),Bs):-
 	member(P1,PS)
 	,member(P2,PS)
-	,metarule_instance(T,Id,[A,P1,P2],_Fs,PS-Cs,[[A|As]|Bs]).
+	,atom_symbol_arity([A|As],A/N)
+	,metarule_instance(T,Id,[A/N,P1,P2],_Fs,PS-Cs,[[A|As]|Bs]).
+
+
+%!	atom_symbol_arity(+Atom,-Predicate_Indicator) is det.
+%
+%	Figure out the symbol and arity of an Atom given as a list.
+%
+atom_symbol_arity([A|As],A/N):-
+	length(As,N).
 
 
 %!	abduction(+Metasubstitution,+Store,-Adbduced) is det.

@@ -120,8 +120,8 @@ order_constraints(T,Ps,Cs):-
 %	predicate_signature/1.
 %
 predicate_order(BK,Ps):-
-	findall(F
-	       ,member(F/_,BK)
+	findall(F/A
+	       ,member(F/A,BK)
 	       ,Ps).
 
 
