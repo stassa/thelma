@@ -353,21 +353,56 @@ true.*/
 %
 assert_metarules([]):-
 	!.
-assert_metarules([metarule(Id,Ss,Fs,_Bs)|Ms]):-
+assert_metarules([metarule(Id,_,_,_)|Ms]):-
+% A metarule with this Id already exists in the dynamic database.
 	metarule_functor(F)
+	,T =.. [F,Id,_,_,_]
 	,predicate_property(T, number_of_clauses(N))
 	,N > 1
-	,T =.. [F,Id,Ss,Fs|[_]]
 	,call(user:T)
 	,!
 	,assert_metarules(Ms).
 assert_metarules([metarule(Id,Ss,Fs,Bs)|Ms]):-
 	metarule_functor(F)
 	,metarule_body(Bs, [], Bs_)
-	,T =.. [F,Id,Ss,Fs,Bs_]
+	,symbols_arities(Ss,Bs_,Ss_)
+	,T =.. [F,Id,Ss_,Fs,Bs_]
 	,user:assert(T)
 	%,numbervars(T) ,writeln(T)
 	,assert_metarules(Ms).
+
+
+%!	symbols_arities(+Symbols,+Literals,-Predicate_Indicators) is
+%!	det.
+%
+%	Derive the Predicate_Indicators of a list of predicate Symbols.
+%
+%	In the configuration notation for metarules, second-order
+%	predicate symbols are not given an arity. Here, their arities
+%	are derived from the arities of the literals in the encapsualted
+%	body of a metarule.
+%
+symbols_arities(Ss,Bs,Ss_r):-
+	symbols_arities(Ss,Bs,[],Ss_)
+	,reverse(Ss_, Ss_r).
+
+
+%!	symbols_arities(+Symbols,+Literals,+Acc,-PIs) is det.
+%
+%	Business end of symbols_arities/3.
+%
+symbols_arities([S],[],Ss,[S|Ss]):-
+% Handles unit metarule where one symbol has no known arity.
+% Which is actually a bit of a hack.
+	!.
+symbols_arities([],[_],Ss,Ss):-
+% Handles tailred metarule where one symbol is shared by two literals.
+	!.
+symbols_arities([],[],Ss,Ss):-
+	!.
+symbols_arities([S|Ss],[[S|As]|Bs],Acc,Bind):-
+	length(As,N)
+	,symbols_arities(Ss,Bs,[S/N|Acc],Bind).
 
 
 %!	metarule_body(+Metarule,+Acc,-Body) is det.
