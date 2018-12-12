@@ -8,10 +8,10 @@
 
 background_knowledge(even/2,[successor/2]).
 
-metarules(even/2,[unit]).
+metarules(even/2,[projection,chain,inverse,unit]).
 
 successor(A,B):-
-	between(1,100,A)
+	between(0,100,A)
 	,succ(A,B).
 
 
@@ -20,6 +20,12 @@ positive_example(even/2,even(A,A)):-
 
 negative_example(even/2,even(A,A)):-
 	member(A,[2,4,6,8,10]).
+
+
+even(0,0).
+even(A,A) :- even_1(A,B),even_2(B,B).
+even_1(A,B):- successor(B,A).
+even_2(A,A) :- even_1(A,B), even(B,B).
 
 
 /*

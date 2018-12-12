@@ -8,7 +8,7 @@
 
 background_knowledge('S'/2,['A'/2,'B'/2]).
 
-metarules('S'/2,[tailrec,chain]).
+metarules('S'/2,[unchain,chain]).
 
 positive_example('S'/2,E):-
 	member(E, ['S'([a,b],[])
