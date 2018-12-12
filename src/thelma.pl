@@ -294,18 +294,8 @@ project_metasub(sub(Id,Ss),C):-
 	metarule_functor(F)
 	,M =.. [F,Id,Ss,_Fs,Bs]
 	,M
-	,project_metasub(Bs,[],[H|Ps_])
-	% If the body of the projected metasub is monadic
-	% join it to the head; if it's empty leave the head alone
-	% else, join the literals by ',' then join the resulting
-	% compound to the head.
-	,(   Ps_ = [Ps]
-	 ->  C = (H:-Ps)
-	 ;   Ps_ = []
-	 ->  C = H
-	 ;   Ps =.. [,|Ps_]
-	    ,C = (H:-Ps)
-	 ).
+	,project_metasub(Bs,[],Ls)
+	,literals_list_to_clause(Ls,C).
 
 
 %!	project_metasub(+Literals,+Acc,-Atoms) is det.
@@ -320,3 +310,19 @@ project_metasub([],Ps,Ps_):-
 project_metasub([L|Ls],Acc,Ps):-
 	L_ =.. L
 	,project_metasub(Ls,[L_|Acc],Ps).
+
+
+%!	literals_list_to_clause(+Literals,-Clause) is det.
+%
+%	Transforma  list of Literals to a Clause.
+%
+literals_list_to_clause([H|[]],H):-
+% No body literals
+	!.
+literals_list_to_clause([H|[B]],(H:-B)):-
+% One body literal
+	!.
+literals_list_to_clause([H|Ls],(H:-Bs)):-
+% A vector of body literals that should be joined by ','/2.
+	Bs =.. [,|Ls].
+
