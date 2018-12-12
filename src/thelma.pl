@@ -247,24 +247,27 @@ right_scan(A,[_|Cs],Acc):-
 
 
 
-%!	disprove(+Program,+Metasubs) is det.
+%!	disprove(+Negative,+Program) is det.
 %
-%	True when Program does not cover Metasubs.
+%	True when a Program does not cover Negative examples.
 %
+disprove([],_Ms):-
+% Skip further processing if there are no negative examples.
+	!.
 disprove(Neg,Ms):-
 	project_metasubs(Ms,false,Prog)
-	,assert_program(thelma,Prog)
-	,forall(member(A,Neg)
-	       ,(A_ =.. A
-		,\+ call(A_)
-		)
-	       )
-	,retract_program(thelma,Prog)
-	,!.
-disprove(_Neg,Ms):-
-	project_metasubs(Ms,false,Prog)
-	,retract_program(thelma,Prog)
-	,fail.
+	,assert_program(thelma,Prog,Refs)
+	% Succeed if the program fails, otherwise fail;
+	% Erase the newly asserted clauses eitherwise.
+	,(	forall(member(A,Neg)
+		      ,(A_ =.. A
+		       ,\+ once(call(A_))
+		       )
+		      )
+	 ->  erase_program_clauses(Refs)
+	 ;   erase_program_clauses(Refs)
+	    ,fail
+	 ).
 
 
 %!	project_metasubs(+Metasubstitutions,+Skolemise,-Program) is det.

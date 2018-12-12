@@ -1,7 +1,9 @@
 :-module(auxiliaries, [order_constraints/3
 		      ,experiment_data/5
 		      ,assert_program/2
+		      ,assert_program/3
 		      ,retract_program/2
+		      ,erase_program_clauses/1
 		      ,initialise_experiment/0
 		      ,cleanup_experiment/0
 		      ,print_clauses/1
@@ -228,6 +230,19 @@ assert_program(M,[C|P]):-
 	,assert_program(M,P).
 
 
+%!	assert_program(+Module,+Program,-Clause_References) is det.
+%
+%	As assert_program/2 but also binds a list of Clause_References.
+%
+assert_program(M,Ps,Rs):-
+	assert_program(M,Ps,[],Rs).
+
+assert_program(_,[],Rs,Rs):-
+	!.
+assert_program(M,[C|P],Acc,Bind):-
+	assert(M:C,Ref)
+	,assert_program(M,P,[Ref|Acc],Bind).
+
 
 %!	retract_program(+Module,+Program) is det.
 %
@@ -239,6 +254,55 @@ retract_program(M,[C|P]):-
 	retract(M:C)
 	,retract_program(M,P).
 
+
+%!	erase_program_clauses(-Clause_References) is det.
+%
+%	Erase a list of Clause_References from the dynamic database.
+%
+%	Clause_References is meant to be a list of references of a
+%	program's clauses asserted to the dynamic database with
+%	assert_program/3.
+%
+%	The purpose of this predicate is, very specifically, to allow a
+%	learned theory previously asserted by invoking assert_program/3
+%	during disprove/2, to be removed from the dynamic database
+%	without stumbling over module scoping that can be complicated
+%	when a predicate is declared in one module and then clauses of
+%	it are added in another module.
+%
+%	For example, the following is what you should expect to see in
+%	the dynamic database after a theory of father/2 is learned and
+%	asserted in the dynamic database, while there is also background
+%	knowledge of father/2:
+%
+%	==
+%	[debug] [1]  ?- listing(thelma:father/2).
+%	:- dynamic tiny_kinship:father/2.
+%
+%	tiny_kinship:father(stathis, kostas).
+%	tiny_kinship:father(stefanos, dora).
+%	tiny_kinship:father(kostas, stassa).
+%	tiny_kinship:father(A, C) :-
+%	    thelma:
+%	    (   father_1(A, B),
+%	        parent(B, C)
+%	    ).
+%
+%	true.
+%	==
+%
+%	This happens because we allow the same experiment modules to
+%	export background predicates that have the same symbol and
+%	arities with target predicates declared in the same module. It
+%	means that it's very fiddly to remove the clauses of the learned
+%	theory, especially while leaving the background predicate
+%	untouched.
+%
+erase_program_clauses([]):-
+	!.
+erase_program_clauses([Ref|Rs]):-
+	erase(Ref)
+	,erase_program_clauses(Rs).
 
 
 %!	initialise_experiment is det.
