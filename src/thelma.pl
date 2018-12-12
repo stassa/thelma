@@ -166,11 +166,17 @@ background_predicate(T,[F|Args]):-
 %	bound to first-order predicate terms from the predicate
 %	Signature.
 %
+metasubstitution(T,[A|As],PS-Cs,sub(Id,[A/N]),Bs):-
+% Unit clause.
+	atom_symbol_arity([A|As],A/N)
+	,metarule_instance(T,Id,[A/N],As,PS-Cs,[_Hs|Bs]).
 metasubstitution(T,[A|As],PS-Cs,sub(Id,[A/N,P]),Bs):-
+% Single body literal
 	member(P,PS)
 	,atom_symbol_arity([A|As],A/N)
 	,metarule_instance(T,Id,[A/N,P],As,PS-Cs,[_Hs|Bs]).
 metasubstitution(T,[A|As],PS-Cs,sub(Id,[A/N,P1,P2]),Bs):-
+% Two body literals
 	member(P1,PS)
 	,member(P2,PS)
 	,atom_symbol_arity([A|As],A/N)

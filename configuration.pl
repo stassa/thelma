@@ -50,7 +50,7 @@ experiment_file('data/tiny_kinship.pl',tiny_kinship).
 %	he dynamic database.
 %
 /* Unit will need the ability to bind constants.*/
-metarule(unit, [P,_], [X,Y], mec(P,X,Y) :- true).
+metarule(unit, [P], [X,Y], mec(P,X,Y) :- true).
 metarule(projection, [P,Q], [X,X], mec(P,X,X) :- mec(Q,X)).
 metarule(identity, [P,Q], [X,Y], mec(P,X,Y) :- mec(Q,X,Y)).
 metarule(inverse, [P,Q], [X,Y], mec(P,X,Y) :- mec(Q,Y,X)).
