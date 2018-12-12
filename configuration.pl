@@ -38,6 +38,7 @@ depth_limits(4,3).
 %
 experiment_file('data/tiny_kinship.pl',tiny_kinship).
 %experiment_file('data/anbn.pl',anbn).
+%experiment_file('data/even.pl',even).
 
 
 %!	metarule(?Name,?Second_order,?First_order,?Literals) is semidet.
@@ -48,6 +49,8 @@ experiment_file('data/tiny_kinship.pl',tiny_kinship).
 %	number. It's only used as a reference, to find the metarule int
 %	he dynamic database.
 %
+metarule(unit, [P,_], [X,Y], mec(P,X,Y) :- true).
+% ^^ Unit will need the ability to bind constants.
 metarule(projection, [P,Q], [X,X], mec(P,X,X) :- mec(Q,X)).
 metarule(identity, [P,Q], [X,Y], mec(P,X,Y) :- mec(Q,X,Y)).
 metarule(inverse, [P,Q], [X,Y], mec(P,X,Y) :- mec(Q,Y,X)).
@@ -67,8 +70,9 @@ metarule_functor('$metarule').
 %!	order_constraints(+M,+Second_Order,+First_Order,+SO_Constraints,+FO_Constraints)
 %!	is det.
 %
-%	A set of order constraints for a Metarule.
+%	A set of order constraints for a metarule, M.
 %
+order_constraints(unit,_Ss,_Fs,[],[]).
 order_constraints(projection,[P,Q],_Fs,[P>Q],[]).
 order_constraints(inverse,[P,Q],_Fs,[P>Q],[]).
 order_constraints(identity,[P,Q],_Fs,[P>Q],[]).

@@ -204,6 +204,8 @@ metarule_instance(T,Id,Ss,Fs,PS-CS,Bs):-
 %
 %	Test the ordering constraints associated with a metarule.
 %
+order_tests(_,_,[],[]):-
+	!.
 order_tests(PS,_,STs,_):-
 	STs \= []
 	,forall(member(A>B,STs)
@@ -288,17 +290,21 @@ project_metasubs(Ms,S,Prog):-
 %
 %	Porject a second-order Metasubstitution to a definite Clause.
 %
-project_metasub(sub(Id,Ss),H:-Ps):-
+project_metasub(sub(Id,Ss),C):-
 	metarule_functor(F)
 	,M =.. [F,Id,Ss,_Fs,Bs]
 	,M
 	,project_metasub(Bs,[],[H|Ps_])
 	% If the body of the projected metasub is monadic
-	% join it to the head; else, join the literals by ','
-	% then join the resulting compound to the head.
+	% join it to the head; if it's empty leave the head alone
+	% else, join the literals by ',' then join the resulting
+	% compound to the head.
 	,(   Ps_ = [Ps]
-	 ->  true
+	 ->  C = (H:-Ps)
+	 ;   Ps_ = []
+	 ->  C = H
 	 ;   Ps =.. [,|Ps_]
+	    ,C = (H:-Ps)
 	 ).
 
 

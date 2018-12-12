@@ -309,6 +309,9 @@ assert_metarules([metarule(Id,Ss,Fs,Bs)|Ms]):-
 %
 %	Transform a metarule's body from a tree to a list.
 %
+metarule_body((H:-true),Acc,Bind):-
+	!
+	,metarule_body(H,Acc,Bind).
 metarule_body((H:-Bs),Acc,Bind):-
 	H =.. [_F|As]
 	,!
