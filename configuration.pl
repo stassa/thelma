@@ -78,5 +78,7 @@ order_constraints(inverse,[P,Q],_Fs,[P>Q],[]).
 order_constraints(identity,[P,Q],_Fs,[P>Q],[]).
 order_constraints(chain,[P,Q,R],_Fs,[P>Q,P>R],[]).
 order_constraints(unchain,_Ss,[X,Y,Z],[],[X>Z,Z>Y]).
+% Bias reformulation paper lists the constraints of the tailrec metarule
+% as P > Q and x > z > y; see Figure 3 in the paper.
 order_constraints(tailrec,_Ss,[X,Y,Z],[],[X>Z,Z>Y]).
 
