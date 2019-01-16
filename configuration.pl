@@ -29,16 +29,16 @@ default_ordering(lower).
 %
 %	The maximum number of Clauses and Invented predicates.
 %
-depth_limits(4,3).
+depth_limits(5,3).
 
 
 %!	experiment_file(?Path,?Module) is semidet.
 %
 %	The Path and Module name of an experiment file.
 %
-experiment_file('data/tiny_kinship.pl',tiny_kinship).
+%experiment_file('data/tiny_kinship.pl',tiny_kinship).
 %experiment_file('data/anbn.pl',anbn).
-%experiment_file('data/even.pl',even).
+experiment_file('data/even.pl',even).
 
 
 %!	metarule(?Name,?Second_order,?First_order,?Literals) is semidet.
@@ -58,6 +58,8 @@ metarule(chain, [P,Q,R], [X,Y,Z], (mec(P,X,Y) :- mec(Q,X,Z), mec(R,Z,Y))).
 % Chain without a second-order constraint.
 metarule(unchain, [P,Q,R], [X,Y,Z], (mec(P,X,Y) :- mec(Q,X,Z), mec(R,Z,Y))).
 metarule(tailrec, [P,Q], [X,Y,Z], (mec(P,X,Y) :- mec(Q,X,Z), mec(P,Z,Y))).
+metarule(precon, [P,Q,R], [X,Y], (mec(P,X,X) :- mec(Q,X,Y), mec(R,Y,Y))).
+metarule(prerec, [P,Q,R], [X,Y], (mec(P,X,X) :- mec(Q,X,Y), mec(R,Y,Y))).
 
 
 %!	metarule_functor(?Functor) is semidet.
@@ -81,4 +83,6 @@ order_constraints(unchain,_Ss,[X,Y,Z],[],[X>Z,Z>Y]).
 % Bias reformulation paper lists the constraints of the tailrec metarule
 % as P > Q and x > z > y; see Figure 3 in the paper.
 order_constraints(tailrec,_Ss,[X,Y,Z],[],[X>Z,Z>Y]).
+order_constraints(precon,[P,Q,R],_Fs,[P>Q,P>R],[]).
+order_constraints(prerec,[_P,_Q,_R],[X,Y],[],[X>Y]).
 
