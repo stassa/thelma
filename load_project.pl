@@ -26,6 +26,6 @@ edit_files:-
 %:-run_tests.
 
 % Large data may require a larger stack.
-%:-set_prolog_stack(global, limit(2**9*10**6)).
-:-prolog_stack_property(global, limit(X))
-,format('Global stack limit ~D~n',[X]).
+%:-set_prolog_flag(stack_limit, 4_096_000_000).
+:-current_prolog_flag(stack_limit, V)
+ ,format('Global stack limit ~D~n',[V]).
