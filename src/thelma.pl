@@ -167,21 +167,39 @@ background_predicate(T,[F|Args]):-
 %	bound to first-order predicate terms from the predicate
 %	Signature.
 %
-metasubstitution(T,[A|As],PS-Cs,sub(Id,[A/N]),Bs):-
-% Unit clause.
-	atom_symbol_arity([A|As],A/N)
-	,metarule_instance(T,Id,[A/N],As,PS-Cs,[_Hs|Bs]).
-metasubstitution(T,[A|As],PS-Cs,sub(Id,[A/N,P]),Bs):-
-% Single body literal
-	member(P,PS)
-	,atom_symbol_arity([A|As],A/N)
-	,metarule_instance(T,Id,[A/N,P],As,PS-Cs,[_Hs|Bs]).
-metasubstitution(T,[A|As],PS-Cs,sub(Id,[A/N,P1,P2]),Bs):-
-% Two body literals
-	member(P1,PS)
-	,member(P2,PS)
-	,atom_symbol_arity([A|As],A/N)
-	,metarule_instance(T,Id,[A/N,P1,P2],_Fs,PS-Cs,[[A|As]|Bs]).
+metasubstitution(T,[S|Args],PS-Cs,sub(Id,[S/A|Ss]),Bs):-
+	atom_symbol_arity([S|Args],S/A)
+	,next_metarule(T,[Id,[S/A|Ss],Fs,[[S|Args]|Bs]])
+	,second_order_bindings(PS,Ss)
+	,configuration:order_constraints(Id,[S/A|Ss],Fs,STs,FTs)
+	,order_tests(PS,Cs,STs,FTs).
+
+
+%!	next_metarule(+Target,-Metarule) is det.
+%
+%	Select the next Metarule for Target.
+%
+next_metarule(T,[Id,Ss,Fs,Bs]):-
+	configuration:experiment_file(_P,Mod)
+	,metarule_functor(F)
+	,Mod:metarules(T,Ms)
+	,member(Id,Ms)
+	,M =.. [F,Id,Ss,Fs,Bs]
+	,user:call(M).
+
+
+%!	second_order_bindings(+Signature,-Bindings) is det.
+%
+%	Ground second order terms to symbols in the Signature.
+%
+%	@tbd This will probably need a new clause to allow for
+%	already-ground existentially quantified terms.
+%
+second_order_bindings(_,[]):-
+	!.
+second_order_bindings(PS,[S/A|Ss]):-
+	member(S/A,PS)
+	,second_order_bindings(PS,Ss).
 
 
 %!	atom_symbol_arity(+Atom,-Predicate_Indicator) is det.
@@ -190,30 +208,6 @@ metasubstitution(T,[A|As],PS-Cs,sub(Id,[A/N,P1,P2]),Bs):-
 %
 atom_symbol_arity([A|As],A/N):-
 	length(As,N).
-
-
-%!	abduction(+Metasubstitution,+Store,-Adbduced) is det.
-%
-%	Add a new Metasubstitution to the abduction Store.
-%
-abduction(MS,Prog,[MS|Prog]):-
-	\+ memberchk(MS, Prog).
-
-
-%!	metarule_instanece(+Target,+Id,+Second_order,+First_order,-Rule)
-%!	is det.
-%
-%	A Generator of metarule instances.
-%
-metarule_instance(T,Id,Ss,Fs,PS-CS,Bs):-
-	configuration:experiment_file(_P,M)
-	,metarule_functor(F)
-	,M:metarules(T,Ms)
-	,member(Id,Ms)
-	,MR =.. [F,Id,Ss,Fs,Bs]
-	,user:call(MR)
-	,configuration:order_constraints(Id,Ss,Fs,STs,FTs)
-	,order_tests(PS,CS,STs,FTs).
 
 
 %!	order_tests(+Predicates,+Constants,+First_Order,+Second_Order)
@@ -261,6 +255,13 @@ right_scan(A,[B|Cs],Cs):-
 right_scan(A,[_|Cs],Acc):-
 	right_scan(A,Cs,Acc).
 
+
+%!	abduction(+Metasubstitution,+Store,-Adbduced) is det.
+%
+%	Add a new Metasubstitution to the abduction Store.
+%
+abduction(MS,Prog,[MS|Prog]):-
+	\+ memberchk(MS, Prog).
 
 
 
