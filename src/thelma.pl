@@ -132,7 +132,7 @@ prove(T,K,[A|As],PS-Cs,Acc1,Bind):-
 	,prove(T,K,As,PS-Cs,Acc2,Bind).
 prove(T,K,[A|As],PS-Cs,Acc1,Bind):-
 	metasubstitution(T,A,PS-Cs,MS,Bs)
-	,abduction(MS,Acc1,Acc2)
+	,new_metasub(MS,Acc1,Acc2)
 	,length(Acc2,N)
 	,N =< K
 	,prove(T,K,Bs,PS-Cs,Acc2,Acc3)
@@ -256,11 +256,11 @@ right_scan(A,[_|Cs],Acc):-
 	right_scan(A,Cs,Acc).
 
 
-%!	abduction(+Metasubstitution,+Store,-Adbduced) is det.
+%!	new_metasub(+Metasub,+Metasubs,-Metasubs_new) is det.
 %
-%	Add a new Metasubstitution to the abduction Store.
+%	Add a new Metasubstitution to the list of Metasubstitutions.
 %
-abduction(MS,Prog,[MS|Prog]):-
+new_metasub(MS,Prog,[MS|Prog]):-
 	\+ memberchk(MS, Prog).
 
 
