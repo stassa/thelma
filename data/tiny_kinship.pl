@@ -2,6 +2,7 @@
 		       ,metarules/2
 		       ,positive_example/2
 		       ,negative_example/2
+		       ,ancestor/2
 		       ,father/2
 		       ,mother/2
 		       ,parent/2
@@ -9,11 +10,13 @@
 		       ,female/1
 		       ]).
 
+background_knowledge(ancestor/2,[parent/2]).
 background_knowledge(father/2,[parent/2,male/1]).
 background_knowledge(grandfather/2,[father/2,mother/2]).
 background_knowledge(male/2,[male/1,female/1]).
 
 % Learn father/2
+metarules(ancestor/2,[tailrec,identity]).
 metarules(father/2,[chain,projection]).
 metarules(grandfather/2,[chain,inverse]).
 metarules(male/2,[identity,projection]).
@@ -25,6 +28,12 @@ father(kostas, stassa).
 mother(alexandra, kostas).
 mother(paraskevi, dora).
 mother(dora, stassa).
+
+ancestor(X,Y):-
+	parent(X,Y).
+ancestor(X,Y):-
+	parent(X,Z)
+	,parent(Z,Y).
 
 parent(X, Y):-
 	father(X,Y).
@@ -40,6 +49,8 @@ female(stassa).
 female(alexandra).
 female(paraskevi).
 
+positive_example(ancestor/2,ancestor(A,B)):-
+	ancestor(A,B).
 positive_example(grandfather/2,grandfather(A,B)):-
 	grandfather(A,B).
 positive_example(father/2,father(A,B)):-
@@ -47,6 +58,8 @@ positive_example(father/2,father(A,B)):-
 positive_example(male/2,male(A,A)):-
 	male(A).
 
+negative_example(ancestor/2,ancestor(A,B)):-
+	ancestor(B,A).
 negative_example(grandfather/2,grandfather(A,B)):-
 	grandmother(A,B).
 negative_example(father/2,father(A,B)):-

@@ -219,10 +219,10 @@ order_tests(_,_,[],[]):-
 	!.
 order_tests(PS,_,STs,_):-
 	STs \= []
+	,!
 	,forall(member(A>B,STs)
 	      ,above(A,B,PS)
-	      )
-	,!.
+	      ).
 order_tests(_,CS,_,FTs):-
 	FTs \= []
 	,forall(member(A>B,FTs)
