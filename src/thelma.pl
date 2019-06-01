@@ -192,14 +192,15 @@ next_metarule(T,[Id,Ss,Fs,Bs]):-
 %
 %	Ground second order terms to symbols in the Signature.
 %
-%	@tbd This will probably need a new clause to allow for
-%	already-ground existentially quantified terms.
-%
 second_order_bindings(_,[]):-
 	!.
 second_order_bindings(PS,[S/A|Ss]):-
 	member(S/A,PS)
 	,second_order_bindings(PS,Ss).
+second_order_bindings(PS,[C|_Ss]):-
+% C is a constant and so are all remaining terms.
+	atomic(C)
+	,second_order_bindings(PS,[]).
 
 
 %!	atom_symbol_arity(+Atom,-Predicate_Indicator) is det.

@@ -38,7 +38,7 @@
 %	in the required order.
 %
 %	The relevant ordering is instead automatically determined a) by
-%	the order in which predicates are declaed as background
+%	the order in which predicates are declared as background
 %	knowledge (by including their symbols and aritities in the list
 %	given as the second argument of the background_knowledge/2
 %	predicate), b) in the order in which atoms of background
@@ -67,7 +67,8 @@
 %	are in Constants.
 %
 %	The two orderings are assigned according to the appearance of
-%	terms in an experiment file, provided by the user. Specifically:
+%	(Prolog) terms in an experiment file, provided by the user.
+%	Specifically:
 %
 %	a) Each predicate is assigned a rank equal to its position in
 %	the list in the second argument of background_knowledge/2,
@@ -98,6 +99,11 @@
 %	Constants. If it is set to "higher", the highest ordering is
 %	used instead.
 %
+order_constraints(T,[],[]):-
+% BK may be empty! e.g. see data/constants.pl
+	configuration:experiment_file(_P,M)
+	,M:background_knowledge(T,[])
+	,!.
 order_constraints(T,Ps,Cs):-
 	configuration:experiment_file(_P,M)
 	,configuration:default_ordering(D)
@@ -396,8 +402,16 @@ symbols_arities([S],[],Ss,[S|Ss]):-
 % Which is actually a bit of a hack.
 	!.
 symbols_arities([],[_],Ss,Ss):-
-% Handles tailred metarule where one symbol is shared by two literals.
+% Handles tailrec metarule where one symbol is shared by two literals.
+% Not convinced this is robust to cover any recursive pattern.
 	!.
+symbols_arities(As,[],Ss,Ss_):-
+% Handles metarules meant to bind constants.
+% These should always come after existentially quantified variables.
+% Stupid reverse-append-reverse needs killing.
+        reverse(As, As_r)
+	,append(As_r,Ss,Ss_)
+	,!.
 symbols_arities([],[],Ss,Ss):-
 	!.
 symbols_arities([S|Ss],[[S|As]|Bs],Acc,Bind):-
