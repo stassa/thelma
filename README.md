@@ -10,39 +10,39 @@ Follow the steps below to run an example that learns the a^nb^n CFG from three
 positive examples.
 
 
-1. Edit configuration.pl:
+### Edit configuration.pl:
 
 Choose the a^nb^n experiment file:
 
-```
+```prolog
 experiment_file('data/anbn.pl',anbn). 
 ```
 
 Set an appropriate depth limit:
 
-```
-depth\_limits(3,1).
+```prolog
+depth_limits(3,1).
 ```
 
-2. Load the project:
+### Load the project:
 
-```
+```prolog
 ?- [load].
 ```
 
 This opens source files in the Swi IDE and starts the documentation browser. You
 should see this README file in your browser.
 
-3. Initialise the experiment:
+### Initialise the experiment:
 
-```
+```prolog
 ?- initialise_experiment.
 true.
 ```
 
-4. Run a query:
+### Run a query:
 
-```
+```prolog
 ?- experiment_data('S'/2,_Pos,_Neg,_BK,_MS), learn(_Pos,_Neg,_Prog), print_clauses(_Prog).
 % Clauses: 1; Invented: 0
 % Clauses: 2; Invented: 0
@@ -57,15 +57,15 @@ true ;
 
 The learned hypothesis translates to the following DCG notation:
 
-```
+```prolog
 'S' --> 'A', 'B'.
 'S' --> 'S_1', 'B'.
 'S_1' --> 'A', 'S'.
 ```
 
-5. Remember to cleanup afterwards to avoid strange errors later on:
+### Remember to cleanup afterwards to avoid strange errors later on:
 
-```
+```prolog
 ?- cleanup_experiment.
 true.
 ```
@@ -94,6 +94,6 @@ Swi-Prolog.
 Bibliography and references
 ===========================
 
-['Muggleton et al. 2014' "Meta Interpretive Learning of higher-order dyadicdatalog: predicate invention revisited"]:(https://link.springer.com/content/pdf/10.1007%2Fs10994-014-5471-y.pdf)
+['Muggleton et al. 2014']:(https://link.springer.com/content/pdf/10.1007%2Fs10994-014-5471-y.pdf "Meta Interpretive Learning of higher-order dyadicdatalog: predicate invention revisited")
 
-[Metagol]:(https://github.com/metagol/metagol)
+[Metagol]:(https://github.com/metagol/metagol "Metagol")
