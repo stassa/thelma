@@ -10,8 +10,12 @@
 
 */
 
+:-multifile metarule/4
+	   ,order_constraints/5.
+
 /* Debug levels */
 :-debug(depth). % Debug number of clauses and invented predicates.
+%:-debug(learn). % Debug learned metasubs
 
 
 %!	default_ordering(?Order) is semidet.
@@ -49,6 +53,28 @@ experiment_file('data/tiny_kinship.pl',tiny_kinship).
 %	number. It's only used as a reference, to find the metarule int
 %	he dynamic database.
 %
+%	This option lists commonly used metarules. metarule/4 is marked
+%	as multifile, so that experiment files can declare their own
+%	special metarules if and as they need to, by adding a new
+%	metarule/4 clause to user, like this:
+%	==
+%	:-module(my_experiment_file_module, [... ]).
+%
+%	% ...
+%
+%	user:metarule(my_special_metarule,....).
+%
+%	% ...
+%
+%	user:order_constraints(my_special_metarule,...).
+%	==
+%
+%	Don't forget the order constraints!
+%
+%	@tbd Adding two metarules (and constraints) with the same name
+%	will likely cause funny things to happen. Try it out if you're
+%	in the mood and let me know.
+%
 /* Unit will need the ability to bind constants.*/
 metarule(unit_monadic, [P], [X], mec(P,X) :- true).
 metarule(unit, [P], [X,Y], mec(P,X,Y) :- true).
@@ -62,9 +88,6 @@ metarule(tailrec, [P,Q], [X,Y,Z], (mec(P,X,Y) :- mec(Q,X,Z), mec(P,Z,Y))).
 metarule(precon, [P,Q,R], [X,Y], (mec(P,X,Y) :- mec(Q,X), mec(R,X,Y))).
 metarule(postcon, [P,Q,R], [X,Y], (mec(P,X,Y) :- mec(Q,X,Y), mec(R,Y))).
 metarule(postcon_unit, [P,Q,R], [X,Y], (mec(P,X) :- mec(Q,X,Y), mec(R,Y))).
-% Not sure why these are like that.
-% metarule(precon, [P,Q,R], [X,Y], (mec(P,X,X) :- mec(Q,X,Y), mec(R,Y,Y))).
-% metarule(prerec, [P,Q,R], [X,Y], (mec(P,X,X) :- mec(Q,X,Y), mec(R,Y,Y))).
 
 
 %!	metarule_functor(?Functor) is semidet.
@@ -79,6 +102,11 @@ metarule_functor('$metarule').
 %
 %	A set of order constraints for a metarule, M.
 %
+%	Lists order constraints for commonly used metarules. Like
+%	metarule/4, this predicate is also marked as multifile so
+%	experiment files can declare their own special order
+%	constraints. See notes in metarule/4.
+%
 order_constraints(unit_monadic,_Ss,_Fs,[],[]).
 order_constraints(unit,_Ss,_Fs,[],[]).
 order_constraints(projection,[P,Q],_Fs,[P>Q],[]).
@@ -92,5 +120,3 @@ order_constraints(tailrec,[P,Q],[X,Y,Z],[P>Q],[X>Z,Z>Y]).
 order_constraints(precon,[P,Q,R],_Fs,[P>Q,P>R],[]).
 order_constraints(postcon,[P,Q,R],_Fs,[P>Q,P>R],[]).
 order_constraints(postcon_unit,[P,Q,R],_Fs,[P>Q,P>R],[]).
-%order_constraints(prerec,[_P,_Q,_R],[X,Y],[],[X>Y]).
-
