@@ -78,7 +78,6 @@ experiment_file('data/tiny_kinship.pl',tiny_kinship).
 %	in the mood and let me know.
 %
 /* Unit will need the ability to bind constants.*/
-metarule(unit_monadic, [P], [X], mec(P,X) :- true).
 metarule(unit, [P], [X,Y], mec(P,X,Y) :- true).
 metarule(projection, [P,Q], [X,X], mec(P,X,X) :- mec(Q,X)).
 metarule(identity, [P,Q], [X,Y], mec(P,X,Y) :- mec(Q,X,Y)).
@@ -87,7 +86,6 @@ metarule(chain, [P,Q,R], [X,Y,Z], (mec(P,X,Y) :- mec(Q,X,Z), mec(R,Z,Y))).
 metarule(tailrec, [P,Q], [X,Y,Z], (mec(P,X,Y) :- mec(Q,X,Z), mec(P,Z,Y))).
 metarule(precon, [P,Q,R], [X,Y], (mec(P,X,Y) :- mec(Q,X), mec(R,X,Y))).
 metarule(postcon, [P,Q,R], [X,Y], (mec(P,X,Y) :- mec(Q,X,Y), mec(R,Y))).
-metarule(postcon_unit, [P,Q,R], [X,Y], (mec(P,X) :- mec(Q,X,Y), mec(R,Y))).
 
 
 %!	metarule_functor(?Functor) is semidet.
@@ -107,7 +105,6 @@ metarule_functor('$metarule').
 %	experiment files can declare their own special order
 %	constraints. See notes in metarule/4.
 %
-order_constraints(unit_monadic,_Ss,_Fs,[],[]).
 order_constraints(unit,_Ss,_Fs,[],[]).
 order_constraints(projection,[P,Q],_Fs,[P>Q],[]).
 order_constraints(inverse,[P,Q],_Fs,[P>Q],[]).
@@ -118,4 +115,3 @@ order_constraints(chain,[P,Q,R],_Fs,[P>Q,P>R],[]).
 order_constraints(tailrec,[P,Q],[X,Y,Z],[P>Q],[X>Z,Z>Y]).
 order_constraints(precon,[P,Q,R],_Fs,[P>Q,P>R],[]).
 order_constraints(postcon,[P,Q,R],_Fs,[P>Q,P>R],[]).
-order_constraints(postcon_unit,[P,Q,R],_Fs,[P>Q,P>R],[]).
