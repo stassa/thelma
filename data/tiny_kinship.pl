@@ -14,7 +14,32 @@
 
 Includes examples for ancestor/2, father/2, grandfather/2 and male/2.
 
-The target theory for ancestor/2 is recursive.
+Usage
+=====
+
+1. Set depth_limits(2,1).
+
+2. Remember to initialise the experiment:
+
+?- initialise_experiment.
+true.
+
+3. Run a query:
+
+?- experiment_data(ancestor/2,_Pos,_Neg,_BK,_MS), learn(_Pos,_Neg,_Prog), print_clauses(_Prog).
+% Clauses: 1; Invented: 0
+% Clauses: 2; Invented: 0
+ancestor(A,B):-parent(A,C),ancestor(C,B).
+ancestor(A,B):-parent(A,B).
+true .
+
+Change ancestor/2 to father/2, grandfather/2 or male/2 to learn
+definitions for those predicates.
+
+4. Be nice and cleanup afterwards:
+
+?- cleanup_experiment.
+true.
 */
 
 background_knowledge(ancestor/2,[parent/2]).

@@ -9,6 +9,36 @@
 
 The example in this file shows how to learn a theory with more than one
 body literal, unlike in constants.pl.
+
+Usage
+=====
+
+1. Set depth_limits(4,0).
+
+2. Remember to initialise the experiment:
+
+?- initialise_experiment.
+true.
+
+3. Run a query:
+
+?- experiment_data(const/2,_Pos,_Neg,_BK,_MS), learn(_Pos,_Neg,_Prog), print_clauses(_Prog).
+% Clauses: 1; Invented: 0
+% Clauses: 2; Invented: 0
+% Clauses: 3; Invented: 0
+% Clauses: 4; Invented: 0
+const(2,A):-successor(A,2).
+const(3,A):-successor(A,3).
+const(A,B):-successor(A,2),successor(2,B).
+const(A,B):-successor(A,3),successor(3,B).
+true ;
+false.
+
+4. Remember to cleanup afterwards:
+
+?- cleanup_experiment.
+true.
+
 */
 
 configuration:metarule(inverse_const,[P,Q,X],[X,Y],mec(P,X,Y):-mec(Q,Y,X)).
@@ -35,9 +65,3 @@ negative_example(const/2,E):-
 successor(A,B):-
 	between(1,10,A)
 	,succ(A,B).
-
-/* target theory:
-const(X,Y):- successor(Y,X).
-const(X,Y):- successor(X,2),successor(2,Y).
-const(X,Y):- successor(X,3),successor(3,Y).
-*/

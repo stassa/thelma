@@ -13,9 +13,14 @@ Current setup learns a^nb^n from three positive examples.
 Usage
 =====
 
-a) Set depth_limits(3,1).
+1. Set depth_limits(3,1).
 
-b) Run the query:
+2. Initialise the experiment:
+
+?- initialise_experiment.
+true.
+
+3. Run the query:
 
 ?- experiment_data('S'/2,_Pos,_Neg,_BK,_MS), learn(_Pos,_Neg,_Prog), print_clauses(_Prog).
 % Clauses: 1; Invented: 0
@@ -36,6 +41,10 @@ This translates to the following DCG notation:
 
 More results are possible. See end of file for longer discussion.
 
+4. Remember to cleanup afterwards:
+
+?- cleanup_experiment.
+true.
 */
 
 % Chain with one less second-order constraint.
