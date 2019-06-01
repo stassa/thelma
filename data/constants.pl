@@ -4,6 +4,12 @@
 		    ,negative_example/2
 		    ]).
 
+/** <module> Experiment file showing how to learn theories with constants.
+
+This file shows examples of target theories with a single body literal
+and one or more constants.
+*/
+
 configuration:metarule(unit_const, [P,X,Y], [], mec(P,X,Y) :- true).
 configuration:metarule(unit_const_1, [P,X], [X,Y], mec(P,X,Y) :- true).
 configuration:metarule(unit_const_2, [P,Y], [X,Y], mec(P,X,Y) :- true).

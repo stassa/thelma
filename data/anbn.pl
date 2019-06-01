@@ -28,6 +28,12 @@ S(A,B):-S_1(A,C),B(C,B).
 S_1(A,B):-A(A,C),S(C,B).
 true ;
 
+This translates to the following DCG notation:
+
+'S' --> 'A', 'B'.
+'S' --> 'S_1', 'B'.
+'S_1' --> 'A', 'S'.
+
 More results are possible. See end of file for longer discussion.
 
 */
@@ -72,6 +78,12 @@ Actually learned (first) theory:
 'S'(A,B):-'A'(A,C),'B'(C,B).
 'S'(A,B):-'S_1'(A,C),'B'(C,B).
 'S_1'(A,B):-'A'(A,C),'S'(C,B).
+
+Actually learned (first) theory as a DCG:
+
+'S' --> 'A', 'B'.
+'S' --> 'S_1', 'B'.
+'S_1' --> 'A', 'S'.
 
 This is basically the same as the target theory except the invented
 predicate S_1/2 starts with A/2 instead of S/2. The important point is

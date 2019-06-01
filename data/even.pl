@@ -7,6 +7,8 @@
 
 /** <module> Experiment file for even/1 generator and acceptor.
 
+Example taken from the _MIL - predicate invention revisited_ paper.
+
 Learns a generator and acceptor of even integers from 0 to 100 by
 inventing a generator and acceptor for odd integers from 0 to 100.
 
@@ -70,7 +72,7 @@ configuration:order_constraints(postcon_unit,_Ss,[X,Y],[],[X>Y]).
 
 background_knowledge(even/1,[predecessor/2]).
 
-metarules(even/1,[unit_monadic,postcon_unit,inverse]).
+metarules(even/1,[unit_monadic,postcon_unit]).
 
 positive_example(even/1,even(A)):-
 	member(A,[0,2,4,6,8,10]).
@@ -88,3 +90,25 @@ negative_example(even/1,even(A)):-
 predecessor(A,B):-
 	between(0,100,A)
 	,succ(B,A).
+
+
+/* Target theory from the MIL paper.
+
+even(0).
+even(A):- even_1(A,B), even_2(B).
+even_1(A,B):- succ(B,A).
+even_2(A):- even_1(A,B), even(B).
+
+This is basically inventing odd _and_ predecessor. I don't quite
+understand why Thelma never seems to learn this, given successor/2
+rather than predecessor/2 as BK. Instead, it learns a strange inversion
+of the predecessor-defined theory:
+
+even_1(101).
+even(A):-successor(A,B),even_1(B).
+even_1(A):-successor(A,B),even(B).
+
+I think it's just unnecessary to invert successor, since using it as it
+is is sufficient. So there is never a point at which the
+inverted-successor theory _must_ be learned to cover the examples.
+*/

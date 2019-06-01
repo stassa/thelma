@@ -5,6 +5,12 @@
 		      ,successor/2
 		     ]).
 
+/** <module> Experiment file showing how to learn a theory with constants.
+
+The example in this file shows how to learn a theory with more than one
+body literal, unlike in constants.pl.
+*/
+
 configuration:metarule(inverse_const,[P,Q,X],[X,Y],mec(P,X,Y):-mec(Q,Y,X)).
 configuration:metarule(chain_const,[P,Q,R,Z],[X,Y,Z],(mec(P,X,Y):-mec(Q,X,Z),mec(R,Z,Y))).
 
@@ -30,8 +36,8 @@ successor(A,B):-
 	between(1,10,A)
 	,succ(A,B).
 
-
-% target theory:
+/* target theory:
 const(X,Y):- successor(Y,X).
 const(X,Y):- successor(X,2),successor(2,Y).
 const(X,Y):- successor(X,3),successor(3,Y).
+*/

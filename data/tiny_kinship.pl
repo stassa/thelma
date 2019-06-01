@@ -10,6 +10,13 @@
 		       ,female/1
 		       ]).
 
+/** <module> Experiment file for a small family domain.
+
+Includes examples for ancestor/2, father/2, grandfather/2 and male/2.
+
+The target theory for ancestor/2 is recursive.
+*/
+
 background_knowledge(ancestor/2,[parent/2]).
 background_knowledge(father/2,[parent/2,male/1]).
 background_knowledge(grandfather/2,[father/2,mother/2]).
