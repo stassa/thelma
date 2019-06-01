@@ -74,25 +74,18 @@ Motivation
 ==========
 
 Thelma is an implementation of Meta-Interpretive Learning, as defined in
-['Muggleton et al. 2014']. It is a simpler version of [Metagol], the original
-implementation of MIL in Prolog that was originally described in that paper.
+['Muggleton et al. 2014']. It is a simpler, no-frills version of [Metagol], the
+original implementation of MIL in Prolog described in that paper. It is
+primarily meant to help instruct beginners interested in MIL. Where necessary,
+concessions were made to readability over efficiency in the implementation.
+Thelma only supports directly the most basic features of MIL identified in
+['Muggleton et al. 2014'] : dyadic datalog hypotheses; predicate invention;
+learning of recursive theories controlled by ordering constraints; and not much
+more.
 
-[Metagol] has gone through many development iterations since its description in
-['Muggleton et al. 2014']. Many of the features described in that paper have
-been replaced or extended. For example [Metagol] no longer uses ordering
-constraints to control recursion. In addition, its source code is highly
-optimised for efficient execution and perhaps not as easy to read any more. It
-would be nice to have a system that stays closer to the original description of
-MIL in ['Muggleton et al. 2014'] and has a more straightforward implementation,
-to make it easier to introduce MIL to interested beginners.
-
-Thelma was created as just such a system. It sticks close to the description of
-Metagol and MIL in ['Muggleton et al. 2014'] and where a choice had to be made
-between efficiency and readability of the source code, efficiency was
-sacrificed. Thelma only supports directly the most basic features of MIL
-identified in ['Muggleton et al. 2014']: dyadic datalog hypotheses; predicate
-invention; learning of recursive theories controlled by ordering constraints;
-and not much more.
+Note that the current version of Thelma is still a very early one and it's
+therefore likely to break in many interesting ways. Please report errors to the
+owner of this repository.
 
 For further reading, see the reference section. For usage instructions consult
 the online documentation initiated when the load.pl file is consulted into
