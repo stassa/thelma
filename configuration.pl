@@ -44,6 +44,7 @@ experiment_file('data/tiny_kinship.pl',tiny_kinship).
 %experiment_file('data/anbn.pl',anbn).
 %experiment_file('data/even.pl',even).
 %experiment_file('data/constants.pl',constants).
+%experiment_file('data/constants_2.pl',constants_2).
 
 
 %!	metarule(?Name,?Second_order,?First_order,?Literals) is semidet.

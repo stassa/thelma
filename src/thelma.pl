@@ -281,8 +281,19 @@ right_scan(A,[_|Cs],Acc):-
 %	Add a new Metasubstitution to the list of Metasubstitutions.
 %
 new_metasub(MS,Prog,[MS|Prog]):-
-	\+ memberchk(MS, Prog).
+	new_metasub(MS,Prog).
 
+%!	new_metasub(+Metasub,+Metasubs) is det.
+%
+%	Business end of new_metasub/3.
+%
+%	True when Metaub is not in Metasubs.
+%
+new_metasub(_,[]):-
+	!.
+new_metasub(MS1,[MS2|Prog]):-
+	MS1 \== MS2
+	,new_metasub(MS1,Prog).
 
 
 %!	disprove(+Negative,+Program) is det.
