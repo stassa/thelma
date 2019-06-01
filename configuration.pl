@@ -88,13 +88,6 @@ metarule(precon, [P,Q,R], [X,Y], (mec(P,X,Y) :- mec(Q,X), mec(R,X,Y))).
 metarule(postcon, [P,Q,R], [X,Y], (mec(P,X,Y) :- mec(Q,X,Y), mec(R,Y))).
 
 
-%!	metarule_functor(?Functor) is semidet.
-%
-%	Functor for the internal representation of metarules.
-%
-metarule_functor('$metarule').
-
-
 %!	order_constraints(+M,+Second_Order,+First_Order,+SO_Constraints,+FO_Constraints)
 %!	is det.
 %
@@ -115,3 +108,10 @@ order_constraints(chain,[P,Q,R],_Fs,[P>Q,P>R],[]).
 order_constraints(tailrec,[P,Q],[X,Y,Z],[P>Q],[X>Z,Z>Y]).
 order_constraints(precon,[P,Q,R],_Fs,[P>Q,P>R],[]).
 order_constraints(postcon,[P,Q,R],_Fs,[P>Q,P>R],[]).
+
+
+%!	metarule_functor(?Functor) is semidet.
+%
+%	Functor for the internal representation of metarules.
+%
+metarule_functor('$metarule').
