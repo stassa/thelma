@@ -388,32 +388,28 @@ assert_metarules([metarule(Id,Ss,Fs,Bs)|Ms]):-
 %	are derived from the arities of the literals in the encapsualted
 %	body of a metarule.
 %
-symbols_arities(Ss,Bs,Ss_r):-
-	symbols_arities(Ss,Bs,[],Ss_)
-	,reverse(Ss_, Ss_r).
-
+symbols_arities(Ss,Bs,Ss_):-
+	symbols_arities(Ss,Bs,[],Ss_).
 
 %!	symbols_arities(+Symbols,+Literals,+Acc,-PIs) is det.
 %
 %	Business end of symbols_arities/3.
 %
-symbols_arities([S],[],Ss,[S|Ss]):-
-% Handles unit metarule where one symbol has no known arity.
-% Which is actually a bit of a hack.
-	!.
-symbols_arities([],[_],Ss,Ss):-
+symbols_arities([],[],Ss,Ss_):-
+	reverse(Ss,Ss_)
+	,!.
+symbols_arities([],[_],Ss,Ss_):-
 % Handles tailrec metarule where one symbol is shared by two literals.
-% Not convinced this is robust to cover any recursive pattern.
-	!.
+% Not convinced this is robust enough to cover any recursive pattern.
+	reverse(Ss,Ss_)
+	,!.
 symbols_arities(As,[],Ss,Ss_):-
 % Handles metarules meant to bind constants.
 % These should always come after existentially quantified variables.
 % Stupid reverse-append-reverse needs killing.
-        reverse(As, As_r)
-	,append(As_r,Ss,Ss_)
+        reverse(Ss, Ss_r)
+	,append(Ss_r,As,Ss_)
 	,!.
-symbols_arities([],[],Ss,Ss):-
-	!.
 symbols_arities([S|Ss],[[S|As]|Bs],Acc,Bind):-
 	length(As,N)
 	,symbols_arities(Ss,Bs,[S/N|Acc],Bind).

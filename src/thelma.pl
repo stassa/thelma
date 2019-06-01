@@ -170,7 +170,7 @@ background_predicate(T,[F|Args]):-
 metasubstitution(T,[S|Args],PS-Cs,sub(Id,[S/A|Ss]),Bs):-
 	atom_symbol_arity([S|Args],S/A)
 	,next_metarule(T,[Id,[S/A|Ss],Fs,[[S|Args]|Bs]])
-	,second_order_bindings(PS,Ss)
+	,second_order_bindings(PS,Fs,Ss)
 	,configuration:order_constraints(Id,[S/A|Ss],Fs,STs,FTs)
 	,order_tests(PS,Cs,STs,FTs).
 
@@ -188,19 +188,38 @@ next_metarule(T,[Id,Ss,Fs,Bs]):-
 	,user:call(M).
 
 
-%!	second_order_bindings(+Signature,-Bindings) is det.
+%!	second_order_bindings(+Signature,+First_Order,-Bindings) is det.
 %
 %	Ground second order terms to symbols in the Signature.
 %
-second_order_bindings(_,[]):-
+second_order_bindings(_,_,[]):-
 	!.
-second_order_bindings(PS,[S/A|Ss]):-
+second_order_bindings(PS,Fs,[C|_Ss]):-
+% C is to be bound to a constant and so are all remaining terms.
+	bound_constant(C,Fs)
+	,!
+	,second_order_bindings(PS,Fs,[]).
+second_order_bindings(PS,Fs,[S/A|Ss]):-
 	member(S/A,PS)
-	,second_order_bindings(PS,Ss).
-second_order_bindings(PS,[C|_Ss]):-
-% C is a constant and so are all remaining terms.
+	,second_order_bindings(PS,Fs,Ss).
+
+
+%!	bound_constant(+Term,+First_order)  is det.
+%
+%	True when a Term is a constant in the hypothesis.
+%
+%	Term is taken from the set of existentially quantified terms in
+%	a metarule. Such a term is a constant in the hypothesis if it
+%	is an atomic Prolog term, or if it is a variable that is also in
+%	the set of First_order variables in the metarule.
+%
+bound_constant(C,_Fs):-
 	atomic(C)
-	,second_order_bindings(PS,[]).
+	,!.
+bound_constant(C,Fs):-
+	copy_term([C|Fs],[C_|Fs_])
+	,numbervars([C_|Fs_])
+	,memberchk(C_,Fs_).
 
 
 %!	atom_symbol_arity(+Atom,-Predicate_Indicator) is det.
