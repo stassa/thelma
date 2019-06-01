@@ -74,12 +74,12 @@ Motivation
 ==========
 
 Thelma is an implementation of Meta-Interpretive Learning, as defined in
-['Muggleton et al. 2014']. It is a simpler, no-frills version of [Metagol], the
+[(Muggleton et al. 2014)]. It is a simpler, no-frills version of [Metagol], the
 original implementation of MIL in Prolog described in that paper. It is
 primarily meant to help instruct beginners interested in MIL. Where necessary,
 concessions were made to readability over efficiency in the implementation.
 Thelma only supports directly the most basic features of MIL identified in
-['Muggleton et al. 2014'] : dyadic datalog hypotheses; predicate invention;
+[(Muggleton et al. 2014)] : dyadic datalog hypotheses; predicate invention;
 learning of recursive theories controlled by ordering constraints; and not much
 more.
 
@@ -94,6 +94,6 @@ Swi-Prolog.
 Bibliography and references
 ===========================
 
-['Muggleton et al. 2014']:(https://link.springer.com/content/pdf/10.1007%2Fs10994-014-5471-y.pdf "Meta Interpretive Learning of higher-order dyadicdatalog: predicate invention revisited")
+[(Muggleton et al. 2014)]: https://link.springer.com/content/pdf/10.1007%2Fs10994-014-5471-y.pdf "Meta Interpretive Learning of higher-order dyadic datalog: predicate invention revisited"
 
-[Metagol]:(https://github.com/metagol/metagol "Metagol")
+[Metagol]: https://github.com/metagol/metagol "Metagol"
