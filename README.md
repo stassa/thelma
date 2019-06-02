@@ -55,19 +55,84 @@ S_1(A,B):-A(A,C),S(C,B).
 true ;
 ```
 
-The learned hypothesis translates to the following DCG notation:
-
-```prolog
-'S' --> 'A', 'B'.
-'S' --> 'S_1', 'B'.
-'S_1' --> 'A', 'S'.
-```
-
 ### Remember to cleanup afterwards to avoid strange errors later on:
 
 ```prolog
 ?- cleanup_experiment.
 true.
+```
+
+### Understanding the results of the example
+
+The hypothesis learned in this example translates to the following BNF notation:
+
+```
+'S' := 'A', 'B'.
+'S' := 'S_1', 'B'.
+'S_1' := 'A', 'S'.
+```
+
+The a^nb^n definition learned by Thelma is a general definition that covers all
+correct strings and no incorrect strings, for arbitrary n. What's more it is
+both a recogniser and a generator, two-in-one.
+
+#### Test correctness
+
+To test the grammar correctly recognises a^nb^n strings up to n = 100,000, save
+the learned hypothesis in a file, consult it, then run this query:
+
+```
+?- _N = 100_000, findall(a, between(1,_N,_), _As), findall(b, between(1,_N,_),_Bs), append(_As,_Bs,_AsBs), anbn:'S'(_AsBs,[]).
+true ;
+```
+
+You can try higher numbers if your computer will allow. The grammar is correct
+for any n. Note again that it was learned from 3 positive examples.
+
+Compare this result with attempts to learn a^nb^n with deep neural nets. See
+[Weiss et al.] where different recurrent neural nets are trained on 100 examples
+of a^nb^n strings and fail to generalise to arbitrary n. After n ~256 it starts
+to lose the plot.
+
+Does the learned theory recognise strings it shouldn't? Try these little tests:
+
+```
+% Not empty.
+?- anbn:'S'([],[]).
+false.
+
+% Not only a
+?- anbn:'S'([a],[]).
+false.
+
+% Not only b
+?- anbn:'S'([b],[]).
+false.
+
+% Not starting with b
+?- anbn:'S'([b|_],[]).
+false.
+
+% Not more a's than b's.
+?- anbn:'S'([a,a,b],[]).
+false.
+
+% Not more b's than a's.
+?- anbn:'S'([a,b,b],[]).
+false.
+```
+
+#### Run as a generator
+
+Run the learned theory as a generator by leaving its first variable unbound:
+
+```
+?- anbn:'S'(A,[]).
+A = [a, b] ;
+A = [a, a, b, b] ;
+A = [a, a, a, b, b, b] ;
+A = [a, a, a, a, b, b, b, b] ;
+A = [a, a, a, a, a, b, b, b, b|...] .
 ```
 
 Motivation

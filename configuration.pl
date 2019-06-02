@@ -40,8 +40,8 @@ depth_limits(2,1).
 %
 %	The Path and Module name of an experiment file.
 %
-experiment_file('data/tiny_kinship.pl',tiny_kinship).
-%experiment_file('data/anbn.pl',anbn).
+%experiment_file('data/tiny_kinship.pl',tiny_kinship).
+experiment_file('data/anbn.pl',anbn).
 %experiment_file('data/even.pl',even).
 %experiment_file('data/constants.pl',constants).
 %experiment_file('data/constants_2.pl',constants_2).

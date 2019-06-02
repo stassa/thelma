@@ -6,6 +6,10 @@
 	       ,'B'/2
 	       ]).
 
+'S'(A,B):-'A'(A,C),'B'(C,B).
+'S'(A,B):-'S_1'(A,C),'B'(C,B).
+'S_1'(A,B):-'A'(A,C),'S'(C,B).
+
 /** <module> Experiment file for a^nb^n grammar.
 
 Current setup learns a^nb^n from three positive examples.
@@ -17,11 +21,14 @@ Usage
 
 2. Initialise the experiment:
 
+==
 ?- initialise_experiment.
 true.
+==
 
 3. Run the query:
 
+==
 ?- experiment_data('S'/2,_Pos,_Neg,_BK,_MS), learn(_Pos,_Neg,_Prog), print_clauses(_Prog).
 % Clauses: 1; Invented: 0
 % Clauses: 2; Invented: 0
@@ -32,19 +39,61 @@ S(A,B):-A(A,C),B(C,B).
 S(A,B):-S_1(A,C),B(C,B).
 S_1(A,B):-A(A,C),S(C,B).
 true ;
+==
 
 This translates to the following DCG notation:
 
+==
 'S' --> 'A', 'B'.
 'S' --> 'S_1', 'B'.
 'S_1' --> 'A', 'S'.
+==
 
-More results are possible. See end of file for longer discussion.
+To test the grammar correctly recognises a^nb^n strings up to n =
+100,000, put the learned hypothesis in a file, consult it, then run this
+query:
+
+==
+?- _N = 100_000, findall(a, between(1,_N,_), _As), findall(b, between(1,_N,_),_Bs), append(_As,_Bs,_AsBs), anbn:'S'(_AsBs,[]).
+true ;
+==
+
+Does it recognise strings it shouldn't? Try these little tests:
+
+==
+% Not empty.
+?- phrase(anbn:'S', []).
+false.
+
+% Not only a
+?- phrase(anbn:'S', [a]).
+false.
+
+% Not only b
+?- phrase(anbn:'S', [b]).
+false.
+
+% Not starting with b
+?- phrase(anbn:'S', [b|_]).
+false.
+
+% Not more a's than b's.
+?- phrase(anbn:'S', [a,a,b]).
+false.
+
+% Not more b's than a's.
+?- phrase(anbn:'S', [a,b,b]).
+false.
+==
+
 
 4. Remember to cleanup afterwards:
 
+==
 ?- cleanup_experiment.
 true.
+==
+
 */
 
 % Chain with one less second-order constraint.
