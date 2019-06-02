@@ -94,9 +94,9 @@ Swi-Prolog.
 Bibliography and references
 ===========================
 
-[S.H. Muggleton, D. Lin, and A. Tamaddoni-Nezhad: Meta Interpretive Learning of higher-order dyadic datalog: predicate invention revisited, Machine Learning 2015](https://link.springer.com/content/pdf/10.1007%2Fs10994-014-5471-y.pdf)
+1. S.H. Muggleton, D. Lin, and A. Tamaddoni-Nezhad: Meta Interpretive Learning of higher-order dyadic datalog: predicate invention revisited, [Machine Learning 2015](https://link.springer.com/content/pdf/10.1007%2Fs10994-014-5471-y.pdf)
 
-[Metagol](Metagol)
+2. [Metagol](Metagol)
 
 [(Muggleton et al. 2014)]: https://link.springer.com/content/pdf/10.1007%2Fs10994-014-5471-y.pdf "Meta Interpretive Learning of higher-order dyadic datalog: predicate invention revisited"
 [Metagol]: https://github.com/metagol/metagol "Metagol"
