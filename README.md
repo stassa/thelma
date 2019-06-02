@@ -30,8 +30,8 @@ depth_limits(3,1).
 ?- [load].
 ```
 
-This opens source files in the Swi IDE and starts the documentation browser. You
-should see this README file in your browser.
+This opens source files in the Swi IDE and starts the documentation browser
+loading this README file.
 
 ### Initialise the experiment:
 
@@ -62,41 +62,40 @@ true ;
 true.
 ```
 
-### Understanding the results of the example
+### Understanding the results
 
 The hypothesis learned in this example translates to the following BNF notation:
 
-```
-'S' := 'A', 'B'.
-'S' := 'S_1', 'B'.
-'S_1' := 'A', 'S'.
+```bnf
+<S> ::= <A> <B>
+<S> ::= <S_1> <B>
+<S_1> ::= <A> <S>
 ```
 
 The a^nb^n definition learned by Thelma is a general definition that covers all
-correct strings and no incorrect strings, for arbitrary n. What's more it is
-both a recogniser and a generator, two-in-one.
+correct strings and no incorrect strings, for arbitrary n. What's more, as a
+Prolog program it can be run both as a recogniser and a generator.
 
 #### Test correctness
 
 To test the grammar correctly recognises a^nb^n strings up to n = 100,000, save
 the learned hypothesis in a file, consult it, then run this query:
 
-```
+```prolog
 ?- _N = 100_000, findall(a, between(1,_N,_), _As), findall(b, between(1,_N,_),_Bs), append(_As,_Bs,_AsBs), anbn:'S'(_AsBs,[]).
-true ;
+true .
 ```
 
-You can try higher numbers if your computer will allow. The grammar is correct
+You can try higher numbers if your computer allows it. The grammar is correct
 for any n. Note again that it was learned from 3 positive examples.
 
-Compare this result with attempts to learn a^nb^n with deep neural nets. See
-[Weiss et al.] where different recurrent neural nets are trained on 100 examples
-of a^nb^n strings and fail to generalise to arbitrary n. After n ~256 it starts
-to lose the plot.
+Compare this result with attempts to learn a^nb^n with deep neural nets. For a
+recent example see [(Weiss et al.)] where different recurrent neural nets are
+trained on 100 examples of a^nb^n strings and fail to generalise to n > 256.
 
-Does the learned theory recognise strings it shouldn't? Try these little tests:
+Does the learned theory recognise strings it shouldn't? Try these tests:
 
-```
+```prolog
 % Not empty.
 ?- anbn:'S'([],[]).
 false.
@@ -126,7 +125,7 @@ false.
 
 Run the learned theory as a generator by leaving its first variable unbound:
 
-```
+```prolog
 ?- anbn:'S'(A,[]).
 A = [a, b] ;
 A = [a, a, b, b] ;
@@ -159,9 +158,12 @@ Swi-Prolog.
 Bibliography and references
 ===========================
 
-1. S.H. Muggleton, D. Lin, and A. Tamaddoni-Nezhad: Meta Interpretive Learning of higher-order dyadic datalog: predicate invention revisited, [Machine Learning 2015](https://link.springer.com/content/pdf/10.1007%2Fs10994-014-5471-y.pdf)
+1. S.H. Muggleton, D. Lin, and A. Tamaddoni-Nezhad, _Meta Interpretive Learning of higher-order dyadic datalog: predicate invention revisited_, [Machine Learning 2015](https://link.springer.com/content/pdf/10.1007%2Fs10994-014-5471-y.pdf)
 
 2. [Metagol](https://github.com/metagol/metagol "Metagol")
 
+3. Gail Weiss, Yoav Goldberg, Eran Yahav, _On the Practical Computational Power of Finite Precision RNNsfor Language Recognition_, [Arxiv, 2018](https://arxiv.org/pdf/1805.04908.pdf)
+
 [(Muggleton et al. 2014)]: https://link.springer.com/content/pdf/10.1007%2Fs10994-014-5471-y.pdf "Meta Interpretive Learning of higher-order dyadic datalog: predicate invention revisited"
 [Metagol]: https://github.com/metagol/metagol "Metagol"
+[(Weiss et al.)]: https://arxiv.org/pdf/1805.04908.pdf "On the Practical Computational Power of Finite Precision RNNsfor Language Recognition"
