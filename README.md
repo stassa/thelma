@@ -1,24 +1,48 @@
 Thelma - a Theory Learning Machine for Meta-Interpretive Learning
 =================================================================
 
+Thelma is an Inductive Logic Programming system. In particular, it is an
+implementation of Meta-Interpretive Learning [(Muggleton et al. 2014)], similar
+to [Metagol]. It learns first order logic theories in the form of dyadic datalog
+definite programs. It is trained on examples given as ground unit clauses and
+with background knowledge given as arbitrary Prolog programs. 
+
+As a MIL implementation, Thelma can perform predicate invention and can learn
+recursive theories, including mutually recursive theories. Thelma is still new
+and feature-light, for the time being.
+
+The plan is to keep Thelma's interface and source code as straightforward and
+user-friendly as possible, sacrificing efficiency where necessary. This would
+make it more appropriate as an introductory system, to help teach interested
+beginners the basic concepts of MIL. This is in contrast with Metagol that is
+optimised for efficiency and speed, and should be preferred for applications
+that require efficiency.
+
+Planned additional features include: an "experiment harness", comprising
+libraries for sampling, training, evaluation and logging; a MIL dataset
+generator; implementations of Plotkin's clause and program reduction algorithms;
+and a library for bagging aggregation for learning in noisy domains.
+
 Example of use
 --------------
 
 Thelma runs on Swi-Prolog version 8.0.0 or later.
 
+See the data/ directory for examples.
+
 Follow the steps below to run an example that learns the a^nb^n CFG from three
 positive examples.
 
+### Edit the configuration file:
 
-### Edit configuration.pl:
-
-Choose the a^nb^n experiment file:
+Open experiment.pl in your favourite text editor and set the name of the
+experiment file to a^nb^n.pl:
 
 ```prolog
 experiment_file('data/anbn.pl',anbn). 
 ```
 
-Set an appropriate depth limit:
+Also set an appropriate depth limit:
 
 ```prolog
 depth_limits(3,1).
@@ -33,13 +57,6 @@ depth_limits(3,1).
 This opens source files in the Swi IDE and starts the documentation browser
 loading this README file.
 
-### Initialise the experiment:
-
-```prolog
-?- initialise_experiment.
-true.
-```
-
 ### Run a query:
 
 ```prolog
@@ -53,13 +70,6 @@ S(A,B):-A(A,C),B(C,B).
 S(A,B):-S_1(A,C),B(C,B).
 S_1(A,B):-A(A,C),S(C,B).
 true ;
-```
-
-### Remember to cleanup afterwards to avoid strange errors later on:
-
-```prolog
-?- cleanup_experiment.
-true.
 ```
 
 ### Understanding the results
@@ -87,11 +97,7 @@ true .
 ```
 
 You can try higher numbers if your computer allows it. The grammar is correct
-for any n. Note again that it was learned from 3 positive examples.
-
-Compare this result with attempts to learn a^nb^n with deep neural nets. For a
-recent example see [(Weiss et al.)] where different recurrent neural nets are
-trained on 100 examples of a^nb^n strings and fail to generalise to n > 256.
+for any n.
 
 Does the learned theory recognise strings it shouldn't? Try these tests:
 
@@ -134,23 +140,6 @@ A = [a, a, a, a, b, b, b, b] ;
 A = [a, a, a, a, a, b, b, b, b|...] .
 ```
 
-Motivation
-==========
-
-Thelma is an implementation of Meta-Interpretive Learning, as defined in
-[(Muggleton et al. 2014)]. It is a simpler, no-frills version of [Metagol], the
-original implementation of MIL in Prolog described in that paper. It is
-primarily meant to help instruct beginners interested in MIL. Where necessary,
-concessions were made to readability over efficiency in the implementation.
-Thelma only supports directly the most basic features of MIL identified in
-[(Muggleton et al. 2014)] : dyadic datalog hypotheses; predicate invention;
-learning of recursive theories controlled by ordering constraints; and not much
-more.
-
-Note that the current version of Thelma is still a very early one and it's
-therefore likely to break in many interesting ways. Please report errors to the
-owner of this repository.
-
 For further reading, see the reference section. For usage instructions consult
 the online documentation initiated when the load.pl file is consulted into
 Swi-Prolog.
@@ -158,12 +147,12 @@ Swi-Prolog.
 Bibliography and references
 ===========================
 
-1. S.H. Muggleton, D. Lin, and A. Tamaddoni-Nezhad, _Meta Interpretive Learning of higher-order dyadic datalog: predicate invention revisited_, [Machine Learning 2015](https://link.springer.com/content/pdf/10.1007%2Fs10994-014-5471-y.pdf)
+1. S.H. Muggleton, D. Lin, N. Pahlavi, and A. Tamaddoni-Nezhad. _Meta-interpretive learning: application to grammatical inference_. [Machine Learning, 94:25-49, 2014](https://link.springer.com/article/10.1007/s10994-013-5358-3)
 
-2. [Metagol](https://github.com/metagol/metagol "Metagol")
+2. S.H. Muggleton, D. Lin, and A. Tamaddoni-Nezhad. _Meta-interpretive learning of higher-order dyadic datalog: Predicate invention revisited_. [Machine Learning, 100(1):49-73, 2015](https://link.springer.com/content/pdf/10.1007%2Fs10994-014-5471-y.pdf)
 
-3. Gail Weiss, Yoav Goldberg, Eran Yahav, _On the Practical Computational Power of Finite Precision RNNsfor Language Recognition_, [Arxiv, 2018](https://arxiv.org/pdf/1805.04908.pdf)
+3. Metagol System [Andrew Cropper and Stephen Muggleton, 2016](https://github.com/metagol/metagol "Metagol")
 
-[(Muggleton et al. 2014)]: https://link.springer.com/content/pdf/10.1007%2Fs10994-014-5471-y.pdf "Meta Interpretive Learning of higher-order dyadic datalog: predicate invention revisited"
+[(Muggleton et al. 2014)]: https://link.springer.com/article/10.1007/s10994-013-5358-3 "Meta-interpretive learning: application to grammatical inference"
+[(Muggleton et al. 2015)]: https://link.springer.com/content/pdf/10.1007%2Fs10994-014-5471-y.pdf "Meta Interpretive Learning of higher-order dyadic datalog: predicate invention revisited"
 [Metagol]: https://github.com/metagol/metagol "Metagol"
-[(Weiss et al.)]: https://arxiv.org/pdf/1805.04908.pdf "On the Practical Computational Power of Finite Precision RNNsfor Language Recognition"

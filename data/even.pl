@@ -21,12 +21,7 @@ Usage
 
 1. Set depth_limits(3,1).
 
-2. Remember to initialise the experiment:
-
-?- initialise_experiment.
-true.
-
-3. Run the query:
+2. Run the query:
 
 ?- experiment_data(even/1,_Pos,_Neg,_BK,_MS), learn(_Pos,_Neg,_Prog), print_clauses(_Prog).
 % Clauses: 1; Invented: 0
@@ -46,11 +41,6 @@ Xs = [].
 
 ?- findall(X, (even:even(X), (X == 0 ; 0 is X mod 2)), _Xs), writeln(_Xs).
 [0,0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,38,40,42,44,46,48,50,52,54,56,58,60,62,64,66,68,70,72,74,76,78,80,82,84,86,88,90,92,94,96,98,100]
-
-5. Remember to cleanup afterwards:
-
-?- cleanup_experiment.
-true.
 
 Expanding the range of the learned theory
 =========================================

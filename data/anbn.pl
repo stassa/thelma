@@ -15,14 +15,8 @@ Usage
 
 1. Set depth_limits(3,1).
 
-2. Initialise the experiment:
 
-==
-?- initialise_experiment.
-true.
-==
-
-3. Run the query:
+2. Run the query:
 
 ==
 ?- experiment_data('S'/2,_Pos,_Neg,_BK,_MS), learn(_Pos,_Neg,_Prog), print_clauses(_Prog).
@@ -81,15 +75,6 @@ false.
 ?- phrase(anbn:'S', [a,b,b]).
 false.
 ==
-
-
-4. Remember to cleanup afterwards:
-
-==
-?- cleanup_experiment.
-true.
-==
-
 */
 
 % Chain with one less second-order constraint.

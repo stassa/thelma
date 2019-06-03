@@ -209,7 +209,8 @@ unique_indices(O,[c(I/J/K,C)|Ss],Acc,Bind):-
 %	experiments.
 %
 experiment_data(T,Pos,Neg,BK,MS):-
-	configuration:experiment_file(_,M)
+	configuration:experiment_file(P,M)
+	,use_module(P)
 	,findall([F|As]
 		,(M:positive_example(T,E)
 		 ,E =.. [F|As]

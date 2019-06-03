@@ -14,12 +14,8 @@ Usage
 
 1. Set depth_limits(3,0).
 
-2. Remember to initialise the experiment:
 
-?- initialise_experiment.
-true.
-
-3. Run a query:
+2. Run a query:
 
 ?- experiment_data(c_1/2,_Pos,_Neg,_BK,_MS), learn(_Pos,_Neg,_Prog), print_clauses(_Prog).
 % Clauses: 1; Invented: 0
@@ -28,11 +24,6 @@ true ;
 
 Change the name of the predicate in the first argument of
 experiment_data/5 to learn definitions of more predicates.
-
-4. Remember to cleanup afterwards:
-
-?- cleanup_experiment.
-true.
 */
 
 configuration:metarule(unit_const, [P,X,Y], [], mec(P,X,Y) :- true).

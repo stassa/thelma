@@ -41,6 +41,7 @@ true.
 %
 learn(Pos,Neg,Prog):-
 	configuration:depth_limits(C,I)
+	,initialise_experiment
 	,target_predicate(Pos,T)
 	,depth_level(C,I,C_,I_)
 	,program_signature(I_,T,Po,Co)
@@ -49,6 +50,9 @@ learn(Pos,Neg,Prog):-
 	,disprove(Neg,Ps)
 	,project_metasubs(Ps, true, Prog_)
 	,sort(Prog_,Prog).
+learn(_Pos,_Neg,_Prog):-
+	cleanup_experiment
+	,fail.
 
 
 %!	depth_level(+Clause_Max,+Invented_Max,-Clauses,-Invented) is
