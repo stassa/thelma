@@ -7,7 +7,6 @@
 		      ,initialise_experiment/0
 		      ,cleanup_experiment/0
 		      ,print_clauses/1
-		      ,list_tree/2
 		      ]).
 
 :-use_module(configuration).
@@ -15,6 +14,8 @@
 :-user:use_module(lib(lifting/lifting)).
 :-user:use_module(lib(bottom_clause/bottom_clause)).
 :-user:use_module(lib(combinatorics/combinatorics)).
+:-user:use_module(lib(term_utilities/term_utilities)).
+
 
 /** <module> Helper predicates for Thelma.
 
@@ -477,23 +478,3 @@ print_clauses(Cs):-
 			      ,numbervars(true)])
 	       )
 	      ).
-
-
-
-%!	list_tree(?List, ?Tree) is det.
-%
-%	Convert between a list and a Prolog binary tree.
-%
-%	Tree is a Prolog term (L1,...,Ln). A binary tree, yes?
-%
-list_tree(Ls, Ts):-
-	phrase(list_tree(Ts), Ls).
-
-
-%!	list_tree(?Tree) is nondet.
-%
-%	Business end of list_tree/2.
-%
-list_tree((T,Ts)) --> [T], list_tree(Ts).
-list_tree((T:-Ts)) --> [T], list_tree(Ts).
-list_tree(T) --> [T].
