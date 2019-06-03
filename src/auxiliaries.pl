@@ -7,7 +7,7 @@
 		      ,initialise_experiment/0
 		      ,cleanup_experiment/0
 		      ,print_clauses/1
-		      ,tree_list/2
+		      ,list_tree/2
 		      ]).
 
 :-use_module(configuration).
@@ -476,15 +476,14 @@ print_clauses(Cs):-
 
 
 
-%!	tree_list(+Tree, -List) is det.
+%!	list_tree(?List, ?Tree) is det.
 %
-%	Convert between a Prolog Tree and a List
+%	Convert between a list and a Prolog binary tree.
 %
-tree_list('()', []):-
-	!.
-tree_list(Ts, Ls):-
-	phrase(list_tree(Ts), Ls)
-	,!.
+%	Tree is a Prolog term (L1,...,Ln). A binary tree, yes?
+%
+list_tree(Ls, Ts):-
+	phrase(list_tree(Ts), Ls).
 
 
 %!	list_tree(?Tree) is nondet.
