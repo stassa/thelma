@@ -6,10 +6,6 @@
 	       ,'B'/2
 	       ]).
 
-'S'(A,B):-'A'(A,C),'B'(C,B).
-'S'(A,B):-'S_1'(A,C),'B'(C,B).
-'S_1'(A,B):-'A'(A,C),'S'(C,B).
-
 /** <module> Experiment file for a^nb^n grammar.
 
 Current setup learns a^nb^n from three positive examples.
