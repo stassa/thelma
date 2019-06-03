@@ -3,16 +3,16 @@ Thelma - a Theory Learning Machine for Meta-Interpretive Learning
 
 Thelma is an Inductive Logic Programming system. In particular, it is an
 implementation of Meta-Interpretive Learning [(Muggleton et al. 2014)], similar
-to [Metagol]. It learns first order logic theories in the form of dyadic datalog
-definite programs. It is trained on examples given as ground unit clauses and
-with background knowledge given as arbitrary Prolog programs. 
+to [Metagol]. It learns first order logic hypotheses in the form of dyadic
+datalog definite programs. It is trained on examples given as ground unit
+clauses and with background knowledge given as arbitrary Prolog programs. 
 
 As a MIL implementation, Thelma can perform predicate invention and can learn
-recursive theories, including mutually recursive theories. Thelma is still new
-and feature-light, for the time being.
+recursive hypotheses, including hypotheses with mutually recursive clauses.
+Thelma is still new and feature-light, for the time being.
 
 The plan is to keep Thelma's interface and source code as straightforward and
-user-friendly as possible, sacrificing efficiency where necessary. This would
+user-friendly as possible, sacrificing efficiency where necessary. That would
 make it more appropriate as an introductory system, to help teach interested
 beginners the basic concepts of MIL. This is in contrast with Metagol that is
 optimised for efficiency and speed, and should be preferred for applications
