@@ -14,9 +14,8 @@ Thelma is still new and feature-light, for the time being.
 The plan is to keep Thelma's interface and source code as straightforward and
 user-friendly as possible, sacrificing efficiency where necessary. That would
 make it more appropriate as an introductory system, to help teach interested
-beginners the basic concepts of MIL. This is in contrast with Metagol that is
-optimised for efficiency and speed, and should be preferred for applications
-that require efficiency.
+beginners the basic concepts of MIL. For applications that require efficiency
+and speed, Metagol should be preferred.
 
 Planned additional features include: an "experiment harness", comprising
 libraries for sampling, training, evaluation and logging; a MIL dataset
