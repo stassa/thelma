@@ -11,6 +11,10 @@
 		      ]).
 
 :-use_module(configuration).
+% Load libraries in /lib into module user.
+:-user:use_module(lib(lifting/lifting)).
+:-user:use_module(lib(bottom_clause/bottom_clause)).
+:-user:use_module(lib(combinatorics/combinatorics)).
 
 /** <module> Helper predicates for Thelma.
 
