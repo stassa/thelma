@@ -34,8 +34,8 @@ positive examples.
 
 ### Edit the configuration file:
 
-Open experiment.pl in your favourite text editor and set the name of the
-experiment file to a^nb^n.pl:
+Open `configuration.pl` in your favourite text editor and set the name of the
+experiment file to `a^nb^n.pl`:
 
 ```prolog
 experiment_file('data/anbn.pl',anbn). 
@@ -48,6 +48,8 @@ depth_limits(3,1).
 ```
 
 ### Load the project:
+
+Consult the project's load file to load the project:
 
 ```prolog
 ?- [load].
@@ -140,7 +142,7 @@ A = [a, a, a, a, a, b, b, b, b|...] .
 ```
 
 For further reading, see the reference section. For usage instructions consult
-the online documentation initiated when the load.pl file is consulted into
+the online documentation initiated when the `load.pl` file is consulted into
 Swi-Prolog.
 
 Bibliography and references
