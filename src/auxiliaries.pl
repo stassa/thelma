@@ -15,6 +15,7 @@
 :-user:use_module(lib(bottom_clause/bottom_clause)).
 :-user:use_module(lib(combinatorics/combinatorics)).
 :-user:use_module(lib(term_utilities/term_utilities)).
+:-user:use_module(lib(mathemancy/mathemancy)).
 
 
 /** <module> Helper predicates for Thelma.
