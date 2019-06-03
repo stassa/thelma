@@ -27,21 +27,21 @@ Example of use
 
 Thelma runs on Swi-Prolog version 8.0.0 or later.
 
-See the data/ directory for examples.
+See the `data/` directory for examples.
 
-Follow the steps below to run an example that learns the a^nb^n CFG from three
-positive examples.
+Follow the steps below to run an example that learns the a^nb^n Context Free
+Ggrammar from three positive examples.
 
 ### Edit the configuration file:
 
 Open `configuration.pl` in your favourite text editor and set the name of the
-experiment file to `a^nb^n.pl`:
+experiment file to `anbn.pl`:
 
 ```prolog
 experiment_file('data/anbn.pl',anbn). 
 ```
 
-Also set an appropriate depth limit:
+Set appropriate upper limits for total clauses and invented clauses:
 
 ```prolog
 depth_limits(3,1).
@@ -55,10 +55,57 @@ Consult the project's load file to load the project:
 ?- [load].
 ```
 
-This opens source files in the Swi IDE and starts the documentation browser
-loading this README file.
+This will load up the necessary source files and the currently configured
+experiment file, which should now be `anbn.pl` if you followed the instructions
+above.
+
+It will also bring up the loaded source files and the experiment file in the
+Swi-Prolog IDE and start the documentation browser loading this README file and
+documentation for the loaded source files.
+
+### The a^nb^n experiment file.
+
+The contents of `anbn.pl` are as follows:
+
+```prolog
+configuration:metarule(unchain, [P,Q,R], [X,Y,Z], (mec(P,X,Y) :- mec(Q,X,Z), mec(R,Z,Y))).
+configuration:order_constraints(unchain,[P,Q,_R],[X,Y,Z],[P>Q],[X>Z,Z>Y]).
+
+background_knowledge('S'/2,['A'/2,'B'/2]).
+
+metarules('S'/2,[unchain]).
+
+positive_example('S'/2,E):-
+	member(E, ['S'([a,b],[])
+		  ,'S'([a,a,b,b],[])
+		  ,'S'([a,a,a,b,b,b],[])
+		  ]).
+
+negative_example('S'/2,_):-
+	fail.
+
+'A'([a|A], A).
+'B'([b|A], A).
+```
+
+The first two lines declare a new metarule called _unchain_ and its ordering
+constraints. _unchain_ is a version of the commonly used _chain_ metarule,
+defined in `configuration.pl`, having one less interval ordering constraint.
+
+The third line of code declares the background knowledge for the target
+predicate 'S'/2. 'S'/2 is the start symbol of the grammar. The next lines
+generate positive and negative examples for 'S'/2. The positive examples are
+three strings in the a^nb^n language. These suffice to learn a grammar for the
+entire language. The negative examples generator generates the empty list- no
+negative examples are needed.
+
+The last two lines are the definitions of the two predicates defined as
+background knowledge, 'A'/2 and 'B'/2. These are the terminals in the a^nb^n
+language.
 
 ### Run a query:
+
+Once `anbn.pl` is loaded, you can run the following query to train Thelma:
 
 ```prolog
 ?- experiment_data('S'/2,_Pos,_Neg,_BK,_MS), learn(_Pos,_Neg,_Prog), print_clauses(_Prog).
@@ -73,7 +120,12 @@ S_1(A,B):-A(A,C),S(C,B).
 true ;
 ```
 
-### Understanding the results
+The predicate `S_1/2` is _invented_. Although it is not given in the background
+knowledge, it is necessary to complete the learning process. It is reconstructed
+from existing background knowledge and metarules, during learning. Note also
+that `S_1/2` is mutually recursive with `S/2`.
+
+### Understanding the training results
 
 The hypothesis learned in this example translates to the following BNF notation:
 
@@ -83,50 +135,9 @@ The hypothesis learned in this example translates to the following BNF notation:
 <S_1> ::= <A> <S>
 ```
 
-The a^nb^n definition learned by Thelma is a general definition that covers all
-correct strings and no incorrect strings, for arbitrary n. What's more, as a
-Prolog program it can be run both as a recogniser and a generator.
-
-#### Test correctness
-
-To test the grammar correctly recognises a^nb^n strings up to n = 100,000, save
-the learned hypothesis in a file, consult it, then run this query:
-
-```prolog
-?- _N = 100_000, findall(a, between(1,_N,_), _As), findall(b, between(1,_N,_),_Bs), append(_As,_Bs,_AsBs), anbn:'S'(_AsBs,[]).
-true .
-```
-
-You can try higher numbers if your computer allows it. The grammar is correct
-for any n.
-
-Does the learned theory recognise strings it shouldn't? Try these tests:
-
-```prolog
-% Not empty.
-?- anbn:'S'([],[]).
-false.
-
-% Not only a
-?- anbn:'S'([a],[]).
-false.
-
-% Not only b
-?- anbn:'S'([b],[]).
-false.
-
-% Not starting with b
-?- anbn:'S'([b|_],[]).
-false.
-
-% Not more a's than b's.
-?- anbn:'S'([a,a,b],[]).
-false.
-
-% Not more b's than a's.
-?- anbn:'S'([a,b,b],[]).
-false.
-```
+This is a general definition of the a^nb^n grammar that covers all strings in
+the language and no strings outside the language, for arbitrary n. What's more,
+as a Prolog program it can be run both as a recogniser and a generator.
 
 #### Run as a generator
 
@@ -141,9 +152,53 @@ A = [a, a, a, a, b, b, b, b] ;
 A = [a, a, a, a, a, b, b, b, b|...] .
 ```
 
-For further reading, see the reference section. For usage instructions consult
-the online documentation initiated when the `load.pl` file is consulted into
-Swi-Prolog.
+#### Test correctness
+
+To test the grammar correctly recognises a^nb^n strings up to n = 100,000, save
+the learned hypothesis in a file, consult it, then run this query:
+
+```prolog
+?- _N = 100_000, findall(a, between(1,_N,_), _As), findall(b, between(1,_N,_),_Bs), append(_As,_Bs,_AsBs), 'S'(_AsBs,[]).
+true .
+```
+
+You can try higher numbers up to the limits of your computational resources. The
+grammar is correct for any n. 
+
+Does the learned theory recognise strings it shouldn't? Try these tests:
+
+```prolog
+% Not empty.
+?- 'S'([],[]).
+false.
+
+% Not only a
+?- 'S'([a],[]).
+false.
+
+% Not only b
+?- 'S'([b],[]).
+false.
+
+% Not starting with b
+?- 'S'([b|_],[]).
+false.
+
+% Not more a's than b's.
+?- 'S'([a,a,b],[]).
+false.
+
+% Not more b's than a's.
+?- 'S'([a,b,b],[]).
+false.
+```
+
+See [Context Free Grammars] for an explanation of how a definition of a^nb^n
+like the one learned by Thelma works.
+
+For further reading on Meta-Interpretive Learning, see the reference section.
+For usage instructions consult the online documentation initiated when the
+`load.pl` file is consulted into Swi-Prolog.
 
 Bibliography and references
 ===========================
@@ -157,3 +212,4 @@ Bibliography and references
 [(Muggleton et al. 2014)]: https://link.springer.com/article/10.1007/s10994-013-5358-3 "Meta-interpretive learning: application to grammatical inference"
 [(Muggleton et al. 2015)]: https://link.springer.com/content/pdf/10.1007%2Fs10994-014-5471-y.pdf "Meta Interpretive Learning of higher-order dyadic datalog: predicate invention revisited"
 [Metagol]: https://github.com/metagol/metagol "Metagol"
+[Context Free Grammars]:http://cs.union.edu/~striegnk/courses/nlp-with-prolog/html/node37.html#l6a.sec.cfgs
