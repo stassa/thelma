@@ -1,6 +1,7 @@
 :-module(sampling, [goal_samples/4
 		   ,goal_sample/4
 		   ,goal_partition/4
+		   ,goal_partitions/5
 		   ,n_list_partitions/3
 		   ,p_list_partitions/4
 		   ,p_list_samples/3
@@ -14,7 +15,7 @@
 
 :-use_module(configuration).
 
-/** <module> Randomly sample from the results of a goal.
+/** <module> Random sampling from lists and goal results.
 */
 
 
@@ -425,11 +426,20 @@ first_k_rest(K,Xs,Ys,Zs):-
 
 
 
-%!	goal_samples(+Probability,+Module,+Goal,-Samples) is det.
+%!	goal_samples(+Probability,+Module,:Goal,-Samples) is det.
 %
 %	Sample from the solutions of Goal, with the given Probability.
 %
+%	Performs a Bernoulli trial for every result of Goal with the
+%	given Probability of success.
+%
 %	Module is the name of the module where Goal is defined.
+%
+%	Goal must be at least partially bound or an instantiation error
+%	will be raised.
+%
+%	Samples is a list of all the results of Goal for which a trial
+%	succeeded.
 %
 %	Examples:
 %	==
@@ -447,11 +457,20 @@ goal_samples(P, M, G, Ss):-
 
 
 
-%!	goal_sample(+Probability,+Module,+Goal,-Sample) is det.
+%!	goal_sample(+Probability,+Module,:Goal,-Sample) is det.
 %
 %	Draw a random sample from the soutions of Goal.
 %
+%	Performs a Bernoulli trial for every result of Goal with the
+%	given Probability of success.
+%
 %	Module is the name of the module where Goal is defined.
+%
+%	Goal must be at least partially bound or an instantiation error
+%	will be raised.
+%
+%	Sample is a result of Goal for which a trial succeeded. Each
+%	result of Goal is tried on successive backtracking.
 %
 %	Example:
 %	==
@@ -471,18 +490,58 @@ goal_sample(P, M, G, G):-
 
 
 
-%!	goal_partition(+P,+Module,+Goal,-Keep) is det.
+%!	goal_partitions(+Probability,+Module,:Goal,-Keeps,-Skips) is
+%!	det.
 %
-%	Keep, or skip, results of Goal according to a probability value.
+%	Partition solutions of Goal according to a Probability value.
 %
-%	This predicate performs a Bernoulli trial with P as the
-%	probability of success.
+%	Performs a Bernoulli trial for each result of Goal with the
+%	given probability of success.
 %
 %	Module is the name of the module where Goal is defined (or a
 %	module that imports it, e.g. 'user').
 %
-%	If Goal is true, then the atom 'true' is bound to Keep with
-%	probability P or to 'false' with probability 1-P. If Goal fails,
+%	Goal must be at least partially bound or an instantiation error
+%	will be raised.
+%
+%	Keeps is the list of all results of Goal for which a trial
+%	succeeded. Skips is the list of all results of Goal for which a
+%	trial failed, i.e. all remaining results of Goal.
+%
+goal_partitions(P, M, G, Ks, Ss):-
+% As in list_partitions/4, there should be no duplicates here either.
+	empty_nb_set(Ks_)
+	,empty_nb_set(Ss_)
+	,forall(goal_partition(P, M, G, Keep)
+	       ,(   Keep
+		->  add_nb_set(G, Ks_, true)
+		;   add_nb_set(G, Ss_, true)
+		)
+	       )
+	,nb_set_to_list(Ks_, Ks)
+	,nb_set_to_list(Ss_, Ss).
+
+
+
+%!	goal_partition(+Probability,+Module,:Goal,-Keep) is det.
+%
+%	Keep, or skip, results of Goal according to a Probability value.
+%
+%	Performs a Bernoulli trial for each result of Goal with the
+%	given probability of success.
+%
+%	Probability can be given as either a real number, in [0,1],
+%	or a percentage, in [0,100].
+%
+%	Module is the name of the module where Goal is defined (or a
+%	module that imports it, e.g. 'user').
+%
+%	Goal must be at least partially bound or an instantiation error
+%	will be raised.
+%
+%	Keep is one of [true,false]. For each result of Goal for which a
+%	trial succeeded, Keep is true. For each result of Goal for which
+%	a trial failed, Keep is false. If Goal fails, then
 %	goal_partition/3 fails.
 %
 %	Example:
@@ -501,24 +560,23 @@ goal_sample(P, M, G, G):-
 %	==
 %
 goal_partition(P, M, G, Keep):-
-	must_be(between(1,100), P)
-	,M:G
-	,random_between(1,100,R)
-	,(   R =< P
-	 ->  Keep = true
-	 ;   Keep = false
-	 ).
+	M:G
+	,bernoulli_trial(P,Keep).
 
 
 
 %!	list_samples(+Probability,+List,-Samples) is det.
 %
-%	Draw Samples from List with the given Probability.
+%	Draw Samples from a List with the given Probability.
 %
-%	Performs Bernoulli sampling.
+%	Performs a Bernoulli trial with the given Probability of
+%	success.
 %
-%	For each element of List, the probability that it will be added
-%	to Samples is equal to the given Probability value.
+%	Probability can be given as either a real number, in [0,1],
+%	or a percentage, in [0,100].
+%
+%	Each element in Samples is an element of List for which a trial
+%	succeeded.
 %
 list_samples(P, Ls, Ss):-
 	findall(S
@@ -527,18 +585,22 @@ list_samples(P, Ls, Ss):-
 
 
 
-%!	list_sample(+Probability,+List,-Sample) is det.
+%!	list_sample(+Probability,+List,-Element) is det.
 %
-%	Draw a Sample from List with the given Probability.
+%	Sample an Element from List with the given Probability.
 %
-%	Performs Bernoulli sampling.
+%	Performs a Bernoulli trial with the given Probability of
+%	success.
 %
-%	Each member of List has the same Probability to be bound to
-%	Sample.
+%	Probability can be given as either a real number, in [0,1],
+%	or a percentage, in [0,100].
+%
+%	Element is an element of List for which a trial succeeded. Each
+%	element is tried on successive backtracking.
 %
 %	@tbd Unlike list_partition/4 on which it is based, this
 %	predicate does not allow a partial element to be passed as a
-%	"filter".
+%	"filter". Should it?
 %
 list_sample(P,Ls,S):-
 	list_partition(P,S,Ls,Keep)
@@ -550,13 +612,14 @@ list_sample(P,Ls,S):-
 %
 %	Partition List according to a Probability value.
 %
-%	Keeps is a list of elements in List, selected with the given
-%	Probability, whereas Skips is the rest of the List.
+%	Performs a Bernoulli trial with the given Probability of
+%	success for each element in List.
 %
-%	List doesn't have to be of a uniform type (i.e. not every
-%	element of it needs to have the same functor and arity). Each
-%	element in List will be selected with the same Probability (or
-%	not selected with the same 1-Probability).
+%	Probability can be given as either a real number, in [0,1],
+%	or a percentage, in [0,100].
+%
+%	Keeps is a list of all elements in List for which a trial
+%	succeeded, whereas Skips is the rest of the List.
 %
 %	Example:
 %	==
@@ -568,6 +631,9 @@ list_sample(P,Ls,S):-
 %	==
 %
 list_partitions(P, Ls, Ks, Ss):-
+% Use of nb-sets here is only for convenience.
+% A single trial is performed for each element, so
+% there should be no duplicate elements added to either set.
 	empty_nb_set(Ks_)
 	,empty_nb_set(Ss_)
 	,forall(list_partition(P, L, Ls, Keep)
@@ -585,16 +651,20 @@ list_partitions(P, Ls, Ks, Ss):-
 %
 %	Keep, or skip, Elements of a List according to a Probability.
 %
+%	Performs a Bernoulli trial for each element of a List that
+%	unifies with Element with the given Probability of success.
+%
 %	Probability can be given as either a real number, in [0,1],
 %	or a percentage, in [0,100].
 %
 %	Element may be a nonground compound term, for instance
 %	p(X,Y). If List is of a non-uniform type, this will act as a
 %	filter of sorts, only binding terms that conform to the pattern
-%	in Element. For this purpose, it is not necessary that List is
-%	of a uniform type (i.e. not every element of it needs to have
-%	the same functor and arity). Elements not matching Element are
-%	simply not selected.
+%	in Element.
+%
+%	Keep is one of [true,false]. Keep is true for each Element of
+%	List for which a trial succeeded and false for every other
+%	Element of List.
 %
 %	Example:
 %	==
@@ -613,14 +683,51 @@ list_partitions(P, Ls, Ks, Ss):-
 %	K = false,
 %	X = 4,
 %	Y = 5.
+%
+%	?- interval(1,100,1,_Is)
+%	,findall(n(I,K),(member(I,_Is),nextto(I,K,_Is)),_Ns)
+%	,list_partition(0.01,L,_Ns,K), K = true.
+%	K = true,
+%	L = n(2, 3) ;
+%	K = true,
+%	L = n(65, 66) ;
+%	false.
 %	==
 %
 list_partition(P,L,Ls,Keep):-
-	must_be(between(1,100),P)
-	,must_be(list, Ls)
+	must_be(list, Ls)
 	,member(L, Ls)
-	,random_between(1,100,R)
-	,(   R =< P
-	 ->  Keep = true
-	 ;   Keep = false
+	,bernoulli_trial(P,Keep).
+
+
+%!	bernoulli_trial(+Probability,-Result) is det.
+%
+%	Perform a Bernoulli Trial.
+%
+%	Probability is the probability of success of the trial. Result
+%	is one of [true,false]. Result is true with the given
+%	Probability and false with probability 1 - Probability.
+%
+%	Probability can be a float or an integer. If it is a float it
+%	must be a number in the closed interval [0.0,1.0]. If it is an
+%	integer, it must be in the closed interval [0,100]. Otherwise,
+%	a type error is raised.
+%
+bernoulli_trial(P,S):-
+	integer(P)
+	,!
+	,must_be(between(0,100),P)
+	,random_between(0,100,R)
+	,(   R < P
+	 ->  S = true
+	 ;   S = false
 	 ).
+bernoulli_trial(P,S):-
+	float(P)
+	,must_be(between(0.0,1.0),P)
+	,random(R)
+	,(   R < P
+	 ->  S = true
+	 ;   S = false
+	 ).
+
