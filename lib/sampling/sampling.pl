@@ -1,21 +1,111 @@
-:-module(sampling, [goal_samples/4
-		   ,goal_sample/4
-		   ,goal_partition/4
-		   ,goal_partitions/5
-		   ,n_list_partitions/3
+:-module(sampling, [n_list_partitions/3
 		   ,p_list_partitions/4
-		   ,p_list_samples/3
 		   ,k_list_partitions/4
+		   ,p_list_samples/3
 		   ,k_list_samples/3
+		   ,goal_samples/4
+		   ,goal_sample/4
+		   ,goal_partitions/5
+		   ,goal_partition/4
 		   ,list_samples/3
 		   ,list_sample/3
-		   ,list_partition/4
 		   ,list_partitions/4
+		   ,list_partition/4
+		   ,bernoulli_trial/2
 		  ]).
 
 :-use_module(configuration).
 
 /** <module> Random sampling from lists and goal results.
+
+Two types of Sampling
+=====================
+
+Predicates in this list perform two kinds of sampling:
+a) Simple random sampling, with or without replacement, or
+b) Bernoulli sampling.
+
+Conceptually, the difference between the two types of sampling is that
+simple random sampling returns a result of predictable size, whereas
+Bernoulli sampling may return a result with a different size each time,
+even given the same parameters.
+
+Operationally, this is because Bernoulli sampling performs a Bernoulli
+trial for each element of its sampling frame, and only selects for the
+end result those elements for which a trial succeeds. Since this
+selection is random, its results, and therefore their number, cannot be
+predicted.
+
+The tradeoff is one between efficiency and precision. Simple random
+sampling is precise in the number of elements selected, but this
+precision comes at a cost of complexity. Bernoulli sampling is dead
+simple, but this simplicity comes at the cost of precision.
+
+In general, both kinds of sampling produce either a list representing a
+random _sample_, or two or more lists, representing _partitions_, of the
+given sampling frame. The sampling frame can be either a list, or the
+set of results of a Prolog goal.
+
+Predicates performing simple random sampling invariably sample from the
+elements of a list. Bernoulli sampling predicates may sample from the
+elements of a list, or from the results of a goal.
+
+The interface of simple random sampling predicates
+==================================================
+
+The different purpose of predicates performing simple random sampling
+can be gleaned from their names. The following naming conventions are
+observed:
+
+a) n_X_Ys*: Perform N times the purpose Y on an instance of X. N must be
+an integer, X is in [list,goal] and Y is in [partition/s, sample/s].
+
+Example: n_list_partitions/3, partitions a list into n partitions.
+
+b) p_X_Ys*: Select a proportion of P elements or results of X for a set
+of Ys. P must be either a percentage in [0,100] or a probability in
+[0.0,1.0]. X is in [list,goal], and Y is in [partition/s,sample/s].
+
+Example: p_list_partitions/4 partitions the elements of a list Ls so
+that the first partition has P elements for some proportion P of |Ls|
+and the second partition has the remaining elements of Ls.
+
+c) k_X_Ys*: Select exactly K elements of results of X for a set of Ys. K
+must be an integer between 0 and the maximum number of elements or
+results of X. X is in [list,goal] and Y is in [partition/s, sample/s].
+
+Example: k_list_partitions/4 partitions the elements of a list Ls so
+that the first partition has exactly K elements of Ls and the second
+partition has all the remaining elements of Ls.
+
+The interface of Bernoulli sampling predicates
+==============================================
+
+Bernoulli sampling predicates always take a probability as the parameter
+that determines the size of the sample, or first partition. They observe
+the following naming convention:
+
+a) X_Ys*: Perform Bernoulli sampling with some probability of success P,
+on all elements, or results of X, producing a set of Ys. X is in
+[list,goal] and Ys is one of [partition/s,sample/s].
+
+Example: goal_samples/4 performs a Bernoulli trial on all results of
+a goal G and produces the list of all results of G for which a trial
+succeeded.
+
+Bernoulli sampling predicates are based on the predicate
+bernoulli_trial/2. This performs a bernoulli trial with a given
+probability and returns an atom A in [true,false], depending on whether
+the trial succceeded (where A = true) or failed (A = false).
+
+Representation of probabilities
+===============================
+
+In both types of sampling predicates, where a probability is required,
+it can be represented in one of two ways:
+a) As a float, in the closed interval [0.0,1.0], or,
+b) As a percentage, an integer in the closed interval [0,100]
+
 */
 
 
