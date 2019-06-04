@@ -6,6 +6,7 @@
 			,order_constraints/5
 			]).
 
+:-user:use_module(src(experiment_file)).
 :-reexport(lib(sampling/sampling_configuration)).
 :-reexport(lib(program_reduction/reduction_configuration)).
 
@@ -118,3 +119,11 @@ order_constraints(postcon,[P,Q,R],_Fs,[P>Q,P>R],[]).
 %	Functor for the internal representation of metarules.
 %
 metarule_functor('$metarule').
+
+
+% This line ensures the experiment file set in the configuration option
+% experiment_file/2 is always updated when the configuration module is
+% changed and reloaded. Don't remove it.
+%
+% DO NOT REMOVE THIS LINE!
+:-experiment_file:reload.
