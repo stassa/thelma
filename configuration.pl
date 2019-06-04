@@ -6,6 +6,8 @@
 			,order_constraints/5
 			]).
 
+:-reexport(lib(program_reduction/reduction_configuration)).
+
 /** <module> Configuration options for Thelma.
 
 */
