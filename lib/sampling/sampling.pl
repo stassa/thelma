@@ -271,19 +271,25 @@ p_list_samples(P,Ls,Ss):-
 	,must_be(between(1,100),P)
 	,length(Ls, N)
 	,K is max(round(P * N / 100),1)
-	,randset(K,N,Is)
-	,L =.. [l|Ls]
-	,findall(S
-		,(member(I,Is)
-		 ,arg(I,L,S)
-		 )
-		,Ss).
+	,p_list_samples(K,N,Ls,Ss).
 p_list_samples(P,Ls,Ss):-
 	float(P)
 	,must_be(between(0.0,1.0),P)
 	,length(Ls, N)
 	,K is max(round(P * N),1)
-	,randset(K,N,Is)
+	,p_list_samples(K,N,Ls,Ss).
+
+
+%!	p_list_samples(+K,+Length,+List,-Samples) is det.
+%
+%	Business end of p_list_samples/3.
+%
+%	@tbd Does this do anything radically different than just calling
+%	k_list_samples(randset,K,N,Ls,Ss)? Shouldn't this be replaced by
+%	the appropriate call to k_list_samples/5, or even v.v.?
+%
+p_list_samples(K,N,Ls,Ss):-
+	randset(K,N,Is)
 	,L =.. [l|Ls]
 	,findall(S
 		,(member(I,Is)
