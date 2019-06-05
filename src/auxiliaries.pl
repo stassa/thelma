@@ -329,18 +329,6 @@ initialise_experiment:-
 	,transform_metarules.
 
 
-
-%!	cleanup_experiment is det.
-%
-%	Unload the currently configured experiment file.
-%
-cleanup_experiment:-
-	configuration:experiment_file(P,M)
-	,unload_file(P)
-	,cleanup_metarules
-	,abolish_experiment_file_interface(M).
-
-
 %!	transform_metarules
 %
 %	Transform metarules to internal representation.
@@ -443,6 +431,19 @@ metarule_body((L),Acc,Bs_):-
 	,reverse([As|Acc], Bs_).
 
 
+
+%!	cleanup_experiment is det.
+%
+%	Unload the currently configured experiment file.
+%
+%	Also removes metarule clauses from the dynamic database.
+%
+cleanup_experiment:-
+	configuration:experiment_file(P,_M)
+	,unload_file(P)
+	,cleanup_metarules.
+
+
 %!	cleanup_metarules is det.
 %
 %	Remove transformed metarules from the dynamic database.
@@ -451,22 +452,6 @@ cleanup_metarules:-
 	metarule_functor(F)
 	,functor(T,F,4)
 	,user:retractall(T).
-
-
-%!	abolish_experiment_file_interface(+Module) is det.
-%
-%	Abolish interface predicates from an experiment file Module.
-%
-%	Meant to make it possible to load and unload different
-%	experiment files in the same Prolog session without import
-%	permission errors.
-%
-abolish_experiment_file_interface(M):-
-	forall(member(F/A, [background_knowledge/2
-			   ,metarules/2
-			   ,positive_example/1
-			   ,negative_example/1])
-	       ,abolish(M:F/A)).
 
 
 %!	print_clauses(+Clauses) is det.
