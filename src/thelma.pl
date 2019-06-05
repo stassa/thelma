@@ -4,34 +4,7 @@
 :-use_module(configuration).
 :-use_module(auxiliaries).
 
-/** <module> A simple Meta-Interpretive Learner, meant for educational purposes.
-
-An example learning session
----------------------------
-
-?- initialise_experiment.
-true.
-
-?- experiment_data(grandfather/2,_Pos,_Neg,_BK,_MS),learn(_Pos,_Neg,_Prog),print_clauses(_Prog).
-
-grandfather(A,B):-father(A,C),parent(C,B).
-true ;
-grandfather(A,B):-father(A,C),parent(C,B).
-grandfather(A,B):-father(A,C),father(C,B).
-true ;
-grandfather(A,B):-father(A,C),mother(C,B).
-grandfather(A,B):-father(A,C),father(C,B).
-true ;
-grandfather(A,B):-father(A,C),parent(C,B).
-true ;
-grandfather(A,B):-father(A,C),mother(C,B).
-grandfather(A,B):-father(A,C),parent(C,B).
-true ;
-false.
-
-?- cleanup_experiment.
-true.
-
+/** <module> A Meta-Interpretive Learning system.
 */
 
 
@@ -135,19 +108,12 @@ prove(T,K,[A|As],PS-Cs,Acc1,Bind):-
 	% adding necessary ones, also?
 	,prove(T,K,As,PS-Cs,Acc2,Bind).
 prove(T,K,[A|As],PS-Cs,Acc1,Bind):-
-	metasubstitution(T,A,PS-Cs,MS,Bs)
+	length(Acc1,N)
+	,N < K
+	,metasubstitution(T,A,PS-Cs,MS,Bs)
 	,new_metasub(MS,Acc1,Acc2)
-	,length(Acc2,N)
-	,N =< K
 	,prove(T,K,Bs,PS-Cs,Acc2,Acc3)
 	,prove(T,K,As,PS-Cs,Acc3,Bind).
-
-/*?- findall([grandfather,A,B], tiny_kinship:grandfather(A,B), _Gs), prove(1,2,_Gs,[father,parent],[],[Ps]), thelma:project_metasub(Ps,Ps_), numbervars(Ps_).
-Ps = sub(chain, [grandfather, father, parent]),
-Ps_ =  (grandfather(A, B):-father(A, C), parent(C, B)) ;
-Ps = sub(chain, [grandfather, parent, parent]),
-Ps_ =  (grandfather(A, B):-parent(A, C), parent(C, B)) ;
-false.*/
 
 
 %!	background_predicate(+Target,+Atom) is det.
