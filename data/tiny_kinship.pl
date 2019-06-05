@@ -56,7 +56,7 @@ ancestor(X,Y):-
 	parent(X,Y).
 ancestor(X,Y):-
 	parent(X,Z)
-	,parent(Z,Y).
+	,ancestor(Z,Y).
 
 parent(X, Y):-
 	father(X,Y).
