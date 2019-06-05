@@ -41,9 +41,9 @@ Grammar from three positive examples.
    ?- [load].
    ```
 
-This should start the Swi-Prolog IDE and open the project source files in the
-editor, including `configuration.pl` used in the next step. It should also start
-the documentation server and open this README file in your browser.
+   This should start the Swi-Prolog IDE and open the project source files in the
+   editor, including `configuration.pl` used in the next step. It should also start
+   the documentation server and open this README file in your browser.
 
 2. Edit the configuration file:
 
