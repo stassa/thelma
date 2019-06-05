@@ -33,7 +33,7 @@ See the `data/` directory for examples.
 Follow the steps below to run an example that learns the a^nb^n Context Free
 Grammar from three positive examples.
 
-### A first experiment: a^nb^n
+### A first experiment: learning a grammar for the a^nb^n context-free language
 
 1. Consult the project's load file to load the project:
    
@@ -41,31 +41,32 @@ Grammar from three positive examples.
    ?- [load].
    ```
 
+This should start the Swi-Prolog IDE and open the project source files in the
+editor, including `configuration.pl` used in the next step. It should also start
+the documentation server and open this README file in your browser.
+
 2. Edit the configuration file:
 
-   Open `configuration.pl` in your favourite text editor and set the name of the
-   experiment file to `anbn.pl`:
+   Edit `configuration.pl` in the Swi-Prolog editor (or your favourite text
+   editor) and set the name of the experiment file to `anbn.pl`:
    
    ```prolog
    experiment_file('data/anbn.pl',anbn).
    ```
    
-   Set appropriate upper limits for total clauses and invented clauses:
+   Also set appropriate upper limits for total clauses and invented clauses:
    
    ```prolog
    depth_limits(3,1).
    ```
 
-3. Recompile the project
+3. Recompile the project:
 
    ```prolog
    ?- make.
    ```
 
-4. Run a query:
-
-   Once `anbn.pl` is loaded as described above, you can run the following query
-   to train Thelma:
+4. Run the following query to train Thelma and print the results.
    
    ```prolog
    ?- experiment_data('S'/2,_Pos,_Neg,_BK,_MS), learn(_Pos,_Neg,_Prog), print_clauses(_Prog).
@@ -80,7 +81,7 @@ Grammar from three positive examples.
    true ;
    ```
 
-   The learned hypothesis is printed to the Swi-Prolgo console by
+   The learned hypothesis is printed to the Swi-Prolog console by
    `print_clauses/1`.
     
    In the learned hypothesis the predicate `S_1/2` is _invented_. Although it is
@@ -102,20 +103,26 @@ BNF notation:
 ```
 
 This is a general definition of the a^nb^n grammar that covers all strings in
-the language and no strings outside the language, for arbitrary n. What's more,
-as a Prolog program it can be run both as a recogniser and a generator.
+the language and no strings outside the language, for arbitrary n. 
+
+See [Context Free Grammars] for an explanation of how a definition of a^nb^n
+like the one learned by Thelma works.
+
+The grammar learned by Thelma is a Prolog program and so it can be run both as a
+recogniser and a generator.
 
 #### Run as a generator
 
-At the end of learning the learned grammar is only printed at the Swi-Prolog
+At the end of training the learned hypothesis is only printed at the Swi-Prolog
 top-level. In order to use it you first have to save it in a file and then
 consult the file, to load its clauses into memory.
 
 You can always copy/paste the learned hypothesis into `anbn.pl` itself. Remember
 to save and reload it afterwards.
 
-Once this is done, run the learned theory as a generator by leaving its first
-variable unbound:
+Once this is done, you can run the learned hypothesis as a generator by leaving
+its first variable unbound. For example, if you saved the learned grammar to
+`anbn.pl`, run the following query:
 
 ```prolog
 ?- anbn:'S'(A,[]).
@@ -126,13 +133,17 @@ A = [a, a, a, a, b, b, b, b] ;
 A = [a, a, a, a, a, b, b, b, b|...] .
 ```
 
+If you saved the learned grammar in a different file, instead replace the module
+qualifier "anbn:" with that file's module name followed by a colon. If the file
+is not a module, simply call `'S'(A, [])` without a module qualifier.
+
 #### Test correctness
 
-To test the grammar correctly recognises a^nb^n strings up to n = 100,000, save
-the learned hypothesis in a file, consult it, then run this query:
+To test the grammar correctly recognises a^nb^n strings up to n = 100,000, run
+this query (assuming you have saved the grammar in the module 'anbn.pl'):
 
 ```prolog
-?- _N = 100_000, findall(a, between(1,_N,_), _As), findall(b, between(1,_N,_),_Bs), append(_As,_Bs,_AsBs), 'S'(_AsBs,[]).
+?- _N = 100_000, findall(a, between(1,_N,_), _As), findall(b, between(1,_N,_),_Bs), append(_As,_Bs,_AsBs), anbn:'S'(_AsBs,[]).
 true .
 ```
 
@@ -143,32 +154,29 @@ Does the learned theory recognise strings it shouldn't? Try these tests:
 
 ```prolog
 % Not empty.
-?- 'S'([],[]).
+?- anbn:'S'([],[]).
 false.
 
 % Not only a
-?- 'S'([a],[]).
+?- anbn:'S'([a],[]).
 false.
 
 % Not only b
-?- 'S'([b],[]).
+?- anbn:'S'([b],[]).
 false.
 
 % Not starting with b
-?- 'S'([b|_],[]).
+?- anbn:'S'([b|_],[]).
 false.
 
 % Not more a's than b's.
-?- 'S'([a,a,b],[]).
+?- anbn:'S'([a,a,b],[]).
 false.
 
 % Not more b's than a's.
-?- 'S'([a,b,b],[]).
+?- anbn:'S'([a,b,b],[]).
 false.
 ```
-
-See [Context Free Grammars] for an explanation of how a definition of a^nb^n
-like the one learned by Thelma works.
 
 ### The a^nb^n experiment file.
 
@@ -200,39 +208,43 @@ negative_example('S'/2,_):-
 
 The first two lines declare a new metarule called _unchain_ and its order
 constraints. _unchain_ is a version of the commonly used _chain_ metarule,
-defined in `configuration.pl`, having one less interval order constraint.
+defined in `configuration.pl`, having one less lexicographic order constraint.
 
 Metarules and order constraints are central to Meta-Interpretive Learning. The
 following is a high-level discussion in the context of their implementation in
-Thelma. For an in-depth discussion see the links in the reference section.
+Thelma. For an in-depth discussion see the links in the bibliography section.
 
 ##### Metarules
 
 Metarules are second-order definite Datalog clauses used as "templates" for
 clauses added to a hypothesis. In the metarule/4 clause in the `anbn.pl`
 experiment file, above, `mec(P,X,Y) :- mec(Q,X,Z), mec(R,Z,Y)` is an
-_encapsulation_ of the metarule `P(X,Y):- Q(X,Z), R(Z,Y)` in a first order term.
-This encapsulation is necessary to allow Prolog to process the metarule (Prolog
-is a first-order language).
+_encapsulation_ of the metarule `P(X,Y):- Q(X,Z), R(Z,Y)` in a first order term
+("mec" stands for "metarule encapsulation"). This encapsulation is necessary to
+allow Prolog to process second-order metarules in a first-order language like
+Prolog.
 
 In the `metarule/4` clause above, `[P,Q,R]` is the set of second order,
 existentially qualified variables and `[X,Y,Z]` the set of first order,
-existentially quantified variables, in _unchain_. 
+universally quantified variables in _unchain_. 
 
 The existentially quantified variables in a metarule range over the set of
-predicate symbols comprising the predicate symbol of the target predicate, the
-predicate symbols in the background knowledge and any invented symbols. In the
-anbn experiment, the predicate symbol of the target predicate is `'S'`, the
-predicate symbols of the background knowledge are `'A'` and `'B'` and `'S_1'` is
-the predicate symbol of an invented predicate.
+predicate symbols including a) the predicate symbol of the target predicate, b)
+each of the predicate symbols of predicates in the background knowledge and c)
+any symbols invented during learning. In the anbn experiment, the predicate
+symbol of the target predicate is `'S'`, the predicate symbols of the background
+knowledge are `'A'` and `'B'` and `'S_1'` is the predicate symbol of an invented
+predicate.
 
 The universally quantified variables in a metarule range over the constants in
 the examples of the target predicate and the bakcground knowledge (the Herbrand
-universe). In the anbn experiment, the Herbrand universe is the set [a,b].
+universe). In the a^nb^n experiment, the Herbrand universe is the set [a,b].
 
 During the search for a hypothesis, the variables in a metarule are bound to
-predicate symbols and a _metasubstitution_ is created. For example, a
-metasubstitution for the _unchain_ metarule in the anbn experiment might be:
+predicate symbols and a _metasubstitution_ is created. A metasubstitution is a
+substitution of existentially quantified variables for predicate symbols. For
+example, a metasubstitution created from the _unchain_ metarule in the a^nb^n
+experiment might be:
 
 ```
 {P/'S',Q/'A',R/'B'}
@@ -241,12 +253,12 @@ metasubstitution for the _unchain_ metarule in the anbn experiment might be:
 Where a term `V/T` means that the variable V is bound to the term T.
 
 During learning, the body literals of a metarule instantiated by the
-metasubstitution are proved. If the succeeds, the metasubstitution is added
-to an abduction store. At the end of learning the metasubstitutions in the
+metasubstitution are proved. If the proof succeeds, the metasubstitution is
+added to an abduction store. At the end of learning the metasubstitutions in the
 abduction store are projected onto their corresponding metarules to form the
 clause of the hypothesis.
 
-For instance, the example metasubstitution above would be be projected onto the
+For instance, the example metasubstitution above would be projected onto the
 _unchain_ metarule to add the following clause to the learned hypothesis:
 
 ```
@@ -255,27 +267,27 @@ _unchain_ metarule to add the following clause to the learned hypothesis:
 
 ##### Order constraints
 
-Order constraints guarantee termination and so allow the learning of recursive
+Order constraints guarantee termination and so allow learning of recursive
 theories. In the `order_constraints/5` clause for _unchain_, in the `anbn.pl`
 experiment file, above, there are two sets of constraints: `[P>Q]` and
 `[X>Z,Z>Y]`. `[P>Q]` is a _lexicographic order_ constraint and `[X>Z,Z>Y]` an
 _interval inclusion_ constraint.
 
 Ordering constraints require a total ordering of the predicate symbols and a
-total ordering of the constants in the Herbrand base of predicates defined in
-the background knowledge. In Thelma, these orders are derived automatically from
-the order in which background predicates, their clauses and their terms, are
-encountered in an experiment file during compilation. Predicate symbols in the
-background knowledge are assigned a _lexicographic_ ordering while their
+total ordering of the constants in the Herbrand base of the predicates defined
+in the background knowledge. In Thelma, these orders are derived automatically
+from the order in which background predicates, their clauses and their terms,
+are encountered in an experiment file during compilation. Predicate symbols in
+the background knowledge are assigned a _lexicographic_ order while their
 constants are assigned an _interval inclusion_ order. See the structured
 documentation of the predicate `order_constraints/3` in module
 `src/auxiliaries.pl` for an explanation of how this is done.
 
 During the search for a hypothesis, termination is guaranteed because atoms with
 a higher order are proved by the meta-interpreter before atoms with a lower
-order. The two orders are finite and so cannot descend infinitely. See [Knuth
-and Bendix, 1970] for the original description and [Zhang et al. 2005] for a
-proof.
+order. The two orders are finite and so cannot descend infinitely. See [(Knuth
+and Bendix, 1970)] for the original description and [(Zhang et al. 2005)] for a
+more recent discussion.
 
 In _unchain_, the lexicographic constraint `[P>Q]` means that any predicate
 symbol bound to the variable `P` in _unchain_ must be above any predicate symbol
@@ -287,7 +299,42 @@ constant bound to the variable `X` in _unchain_ must be above any constant bound
 to the variable `X` and so on for `Z>Y`, with respect to the interval inclusion
 order over the Herbrand base.
 
-### Background knowledge and examples
+You can query `order_constraints/3` to inspect the total orders it derives from
+an experiment file. For example, for the `anbn.pl` experiment file, the
+following orders are derived:
+
+```prolog
+?- order_constraints('S'/2,Ps,Cs).
+Ps = ['A'/2, 'B'/2],
+Cs = [[a|_9572], [b|_9560], []]
+```
+
+Above, the two lists, `Ps` and `Cs` represent the lexicographic and interval
+orders, respectively. In this representation, a term `p` is above another term
+`q` in their respective order, iff `p` is before `q` in an ordering list.
+
+The symbol of the target predicate is always added to the start of the list of
+lexicographic order list (this is done after `order_constraints/2` is called, so
+you cannot see it in the query above). Additionally, any predicates during
+learning are added to the lexicographic order list right after the target
+predicate. The complete lexicographic order list for the `anbn.pl` experiment
+file with the invented predicate symbol `S_1/2` would look like the following:
+
+```prolog
+['S'/2, 'S_1'/2, 'A'/2, 'B'/2]
+```
+
+Given the two orders above and the lexicographic constraint `P>Q` in _unchain_,
+the metasubstitution `{P/'S',Q/'A',R/'B'}` upholds the constraint, whereas a
+metasubstitution `{P/`B`,Q/'A',R/'S'}` violates the constraint because it binds
+P to 'B' and Q to 'A' when `P>Q` and `A/2>B/2`.
+
+Violation of a constraint means that the corresponding metasubstitution is not
+allowed and a new metasubstitution is tried. This way, the search for hypotheses
+only considers hypotheses with clauses that satisfy the constraints and are
+guaranteed to terminate.
+
+#### Background knowledge and examples
 
 ILP algorithms are characterised by their use of background knowledge to
 constraint the search for hypotheses.
@@ -314,6 +361,19 @@ empty list- no negative examples are needed.
 The last two lines are the definitions of the two predicates defined as
 background knowledge, 'A'/2 and 'B'/2.
 
+#### The need for inductive bias in machine learning
+
+Clearly, background knowledge, metarules and order constraints impose a strong
+bias on the hypotheses that can be learned. The need for inductive bias in
+machine learning merits a longer discussion that is well beyond the scope of
+this introduction to Thelma. Suffice it to say that, without bias, there can be
+no learning. For a discussion, see [Mitchell, 1997]. There are no machine
+learning algorithms that do not encode bias in some form- neural network
+architectures, Support Vector Machines' kernels, distance functions, Bayesian
+priors- are all instances of such bias encoding. The advantage of MIL and ILP
+algorithms in general is that inductive bias has a clear and precise definition
+that is easy to inspect and modify.
+
 ### Further reading
 
 A complete manual for Thelma with full usage instructions and more examples will
@@ -333,11 +393,14 @@ Bibliography and references
 
 4. Knuth, D., & Bendix, P. (1970). Simple word problems in universal algebras. [In J. Leech (Ed.), Computational problems in abstract algebra (pp. 263–297). Oxford: Pergamon.](https://link.springer.com/chapter/10.1007/978-3-642-81955-1_23)
 
-5. Zhang, T., Sipma, H., & Manna, Z. (2005). The decidability of the first-order theory of Knuth–Bendix order. [In Automated deduction-CADE-20 (pp. 738–738). Berlin: Springer.](https://link.springer.com/chapter/10.1007/11532231_10)
+5. Machine Learning, Tom Mitchell, [McGraw Hill, 1997.](https://www.cs.cmu.edu/afs/cs.cmu.edu/user/mitchell/ftp/mlbook.html)
+
+6. Zhang, T., Sipma, H., & Manna, Z. (2005). The decidability of the first-order theory of Knuth–Bendix order. [In Automated deduction-CADE-20 (pp. 738–738). Berlin: Springer.](https://link.springer.com/chapter/10.1007/11532231_10)
 
 [(Muggleton et al. 2014)]: https://link.springer.com/article/10.1007/s10994-013-5358-3 "Meta-interpretive learning: application to grammatical inference"
 [(Muggleton et al. 2015)]: https://link.springer.com/content/pdf/10.1007%2Fs10994-014-5471-y.pdf "Meta Interpretive Learning of higher-order dyadic datalog: predicate invention revisited"
 [Metagol]: https://github.com/metagol/metagol "Metagol"
 [Context Free Grammars]:http://cs.union.edu/~striegnk/courses/nlp-with-prolog/html/node37.html#l6a.sec.cfgs
-[Knuth and Bendix, 1970]: https://link.springer.com/chapter/10.1007/978-3-642-81955-1_23
-[Zhang et al. 2005]: https://link.springer.com/chapter/10.1007/11532231_10
+[(Knuth and Bendix, 1970)]: https://link.springer.com/chapter/10.1007/978-3-642-81955-1_23
+[(Zhang et al. 2005)]: https://link.springer.com/chapter/10.1007/11532231_10
+[(Mitchell, 1997)]: https://www.cs.cmu.edu/afs/cs.cmu.edu/user/mitchell/ftp/mlbook.html
