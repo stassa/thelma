@@ -79,10 +79,8 @@ reload:-
 	,replace_experiment_file(P,M)
 	,abolish_experiment_file_interface(user)
 	,abolish_experiment_file_interface(experiment_file)
-	,format('Loading module ~w from ~w~n', [M,P])
 	,interface_reexports(Es)
-	,reexport(P, except(Es))
-	,listing(M:_X).
+	,reexport(P, except(Es)).
 
 
 %!	replace_experiment_file(+Path,+Module) is det.
@@ -106,12 +104,10 @@ reload:-
 %
 replace_experiment_file(P,M):-
 	\+ '$experiment_file'(_,_)
-	,writeln('Found no experiment file')
 	,assert('$experiment_file'(P,M))
 	,!.
 replace_experiment_file(P1,M1):-
-	'$experiment_file'(P0,M0)
-	,format('Found experiment file module: ~w ~w ~n',[P0,M0])
+	'$experiment_file'(P0,_M0)
 	,unload_file(P0)
 	,retractall('$experiment_file'(_,_))
 	,assert('$experiment_file'(P1,M1)).
@@ -129,9 +125,7 @@ replace_experiment_file(P1,M1):-
 abolish_experiment_file_interface(M):-
 	experiment_file_interface(Is)
 	,forall(member(F/A, Is)
-	       ,(abolish(M:F/A)
-		,format('Abolished ~w~n',[M:F/A])
-		)
+	       ,abolish(M:F/A)
 	       ).
 
 
