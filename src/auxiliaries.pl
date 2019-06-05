@@ -462,6 +462,8 @@ print_clauses(Cs):-
 	forall(member(C,Cs)
 	      ,(write_term(C, [fullstop(true)
 			      ,nl(true)
-			      ,numbervars(true)])
+			      ,numbervars(true)
+			      ,quoted(true)
+			      ])
 	       )
 	      ).
