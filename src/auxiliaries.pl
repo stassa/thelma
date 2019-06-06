@@ -7,6 +7,7 @@
 		      ,initialise_experiment/0
 		      ,cleanup_experiment/0
 		      ,print_clauses/1
+		      ,program/3
 		      ]).
 
 :-use_module(configuration).
@@ -467,3 +468,34 @@ print_clauses(Cs):-
 			      ])
 	       )
 	      ).
+
+
+
+%!	program(+Symbols,+Module,-Program) is det.
+%
+%	Collect all clauses of a Program.
+%
+%	Symbols is the list of predicate indicators, F/A, of clauses in
+%	Program.
+%
+%	Module is the definition module for Progam. This can be set to
+%	user if the Program is not defined in a module.
+%
+%	Program is a list of all the clauses of the predicates in
+%	Symbols.
+%
+%	@tbd This doesn't attempt to sort the list of Symbols to exclude
+%	duplicates- if the same Symbol is passed in more than once, the
+%	same definition will be included that many times in Programs.
+%
+program(Ss,M,Ps):-
+	findall(P
+	       ,(member(F/A,Ss)
+		,functor(H,F,A)
+		,M:clause(H,B)
+		,(   B == true
+		 ->  P = H
+		 ;   P = (H:-B)
+		 )
+		)
+	       ,Ps).
