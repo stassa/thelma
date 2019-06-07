@@ -12,8 +12,9 @@ and one or more constants.
 Usage
 =====
 
-1. Set depth_limits(3,0).
+1. Set sufficient clause limits in configuration.pl:
 
+depth_limits(3,0).
 
 2. Run a query:
 
@@ -39,14 +40,12 @@ background_knowledge(c_2/2,[]).
 background_knowledge(c_3/2,[]).
 background_knowledge(c_4/2,[]).
 background_knowledge(c_5/2,[]).
-background_knowledge(c_x/2,[]).
 
 metarules(c_1/2,[unit_const]).
 metarules(c_2/2,[unit_const]).
 metarules(c_3/2,[unit_const_1]).
 metarules(c_4/2,[unit_const_2]).
 metarules(c_5/2,[unit_const_1,unit_const_2]).
-metarules(c_x/2,[unit_const_1,unit_const_2]).
 
 % Bind a pair of constants in a unit clause.
 positive_example(c_1/2, E):-
@@ -69,22 +68,15 @@ positive_example(c_4/2, E):-
 	member(E,[c_4(_,1)
 		 ,c_4(_,2)
 		 ]).
-% Bind two constants in the first and second argument, respectively, of
-% two different unit clauses.
-% This doesn't really work. Probably the negative examples are wrogn.
-positive_example(c_5/2, E):-
-	member(E,[c_5(1,_)
-		 ,c_5(_,2)
-		 ]).
 % Bind three constants in three different unit clauses.
 % Totally cribbed off Metagol's examples in examples/constants1.pl.
-positive_example(c_x/2, E):-
-	member(E,[c_x(1,2),
-		  c_x(1,3),
-		  c_x(1,4),
-		  c_x(1,1),
-		  c_x(2,2),
-		  c_x(4,4)
+positive_example(c_5/2, E):-
+	member(E,[c_5(1,2),
+		  c_5(1,3),
+		  c_5(1,4),
+		  c_5(1,1),
+		  c_5(2,2),
+		  c_5(4,4)
 		 ]).
 
 negative_example(c_1/2, _):-
@@ -99,14 +91,9 @@ negative_example(c_4/2, E):-
 	member(E,[c_4(_,3)
 		 ,c_4(_,4)
 	       ]).
-negative_example(c_5/2,E):-
-	member(E, [%c_5(2,2)
-		  %,c_5(1,1)
-		  c_5(1,2)
-	       ]).
-negative_example(c_x/2, E):-
-	member(E,[c_x(2,4),
-		  c_x(3,4),
-		  c_x(3,1)
+negative_example(c_5/2, E):-
+	member(E,[c_5(2,4),
+		  c_5(3,4),
+		  c_5(3,1)
 		 ]).
 

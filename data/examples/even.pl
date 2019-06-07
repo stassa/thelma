@@ -5,6 +5,10 @@
 	       ,predecessor/2
 	       ]).
 
+even(0).
+even(A):-predecessor(A,B),even_1(B).
+even_1(A):-predecessor(A,B),even(B).
+
 /** <module> Experiment file for even/1 generator and acceptor.
 
 Example taken from the _MIL - predicate invention revisited_ paper.
@@ -19,9 +23,11 @@ learn mutually recursive theories.
 Usage
 =====
 
-1. Set depth_limits(3,1).
+1. Set sufficient clause limits in configuration.pl:
 
-2. Run the query:
+depth_limits(3,1).
+
+2. Run the following query:
 
 ?- experiment_data(even/1,_Pos,_Neg,_BK,_MS), learn(_Pos,_Neg,_Prog), print_clauses(_Prog).
 % Clauses: 1; Invented: 0
@@ -34,13 +40,14 @@ even(A):-predecessor(A,B),even_1(B).
 even_1(A):-predecessor(A,B),even(B). % Invention of odd/1
 true .
 
-4. Consult hypothesis and test:
+4. Copy/paste the hypothesis into this file, reconsult it and test it:
 
 ?- findall(X, (even:even(X), \+ (X == 0 ; 0 is X mod 2)), Xs).
 Xs = [].
 
-?- findall(X, (even:even(X), (X == 0 ; 0 is X mod 2)), _Xs), writeln(_Xs).
-[0,0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,38,40,42,44,46,48,50,52,54,56,58,60,62,64,66,68,70,72,74,76,78,80,82,84,86,88,90,92,94,96,98,100]
+?- findall(X, (even:even(X), 0 is X mod 2), _Xs), writeln(_Xs).
+[0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,38,40,42,44,46,48,50,52,54,56,58,60,62,64,66,68,70,72,74,76,78,80,82,84,86,88,90,92,94,96,98,100]
+true.
 
 Expanding the range of the learned theory
 =========================================
@@ -90,25 +97,3 @@ negative_example(even/1,even(A)):-
 predecessor(A,B):-
 	between(0,100,A)
 	,succ(B,A).
-
-
-/* Target theory from the MIL paper.
-
-even(0).
-even(A):- even_1(A,B), even_2(B).
-even_1(A,B):- succ(B,A).
-even_2(A):- even_1(A,B), even(B).
-
-This is basically inventing odd _and_ predecessor. I don't quite
-understand why Thelma never seems to learn this, given successor/2
-rather than predecessor/2 as BK. Instead, it learns a strange inversion
-of the predecessor-defined theory:
-
-even_1(101).
-even(A):-successor(A,B),even_1(B).
-even_1(A):-successor(A,B),even(B).
-
-I think it's just unnecessary to invert successor, since using it as it
-is is sufficient. So there is never a point at which the
-inverted-successor theory _must_ be learned to cover the examples.
-*/

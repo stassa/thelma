@@ -81,7 +81,6 @@ experiment_file('data/examples/tiny_kinship.pl',tiny_kinship).
 %	will likely cause funny things to happen. Try it out if you're
 %	in the mood and let me know.
 %
-/* Unit will need the ability to bind constants.*/
 metarule(unit, [P], [X,Y], mec(P,X,Y) :- true).
 metarule(projection, [P,Q], [X,X], mec(P,X,X) :- mec(Q,X)).
 metarule(identity, [P,Q], [X,Y], mec(P,X,Y) :- mec(Q,X,Y)).
@@ -107,8 +106,6 @@ order_constraints(projection,[P,Q],_Fs,[P>Q],[]).
 order_constraints(inverse,[P,Q],_Fs,[P>Q],[]).
 order_constraints(identity,[P,Q],_Fs,[P>Q],[]).
 order_constraints(chain,[P,Q,R],_Fs,[P>Q,P>R],[]).
-% Bias reformulation paper lists the constraints of the tailrec metarule
-% as P > Q and x > z > y; see Figure 3 in the paper.
 order_constraints(tailrec,[P,Q],[X,Y,Z],[P>Q],[X>Z,Z>Y]).
 order_constraints(precon,[P,Q,R],_Fs,[P>Q,P>R],[]).
 order_constraints(postcon,[P,Q,R],_Fs,[P>Q,P>R],[]).

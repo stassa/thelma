@@ -8,15 +8,17 @@
 
 /** <module> Experiment file for a^nb^n grammar.
 
-Current setup learns a^nb^n from three positive examples.
+Setup to learn a^nb^n from three positive examples with one invented
+predicate.
 
 Usage
 =====
 
-1. Set depth_limits(3,1).
+1. Set sufficient clause limits in configuration.pl:
 
+depth_limits(3,1).
 
-2. Run the query:
+2. Run the following query:
 
 ==
 ?- experiment_data('S'/2,_Pos,_Neg,_BK,_MS), learn(_Pos,_Neg,_Prog), print_clauses(_Prog).
@@ -40,8 +42,8 @@ This translates to the following DCG notation:
 ==
 
 To test the grammar correctly recognises a^nb^n strings up to n =
-100,000, put the learned hypothesis in a file, consult it, then run this
-query:
+100,000, past the learned hypothesis at the start of this file,
+reconsult it, then run this query:
 
 ==
 ?- _N = 100_000, findall(a, between(1,_N,_), _As), findall(b, between(1,_N,_),_Bs), append(_As,_Bs,_AsBs), anbn:'S'(_AsBs,[]).
@@ -89,7 +91,6 @@ positive_example('S'/2,E):-
 	member(E, ['S'([a,b],[])
 		  ,'S'([a,a,b,b],[])
 		  ,'S'([a,a,a,b,b,b],[])
-		  %,'S'([a,a,a,a,b,b,b,b],[])
 		  ]).
 
 negative_example('S'/2,_):-
@@ -97,78 +98,3 @@ negative_example('S'/2,_):-
 
 'A'([a|A], A).
 'B'([b|A], A).
-
-
-/*
-Target theory, as ordinary Prolog.
-
-'S'(A, C):- 'A'(A, B),'B'(B, C).
-'S'(A,B):- 'A'(A,C),'S_1'(C,B).
-'S_1'(A,B):-'S'(A,C),'B'(C,B).
-
-Target theory, as a DCG.
-
-'S' --> 'A', 'B'.
-'S' --> 'A', 'S_1'.
-'S_1' --> 'S', 'B'.
-
-Actually learned (first) theory:
-
-'S'(A,B):-'A'(A,C),'B'(C,B).
-'S'(A,B):-'S_1'(A,C),'B'(C,B).
-'S_1'(A,B):-'A'(A,C),'S'(C,B).
-
-Actually learned (first) theory as a DCG:
-
-'S' --> 'A', 'B'.
-'S' --> 'S_1', 'B'.
-'S_1' --> 'A', 'S'.
-
-This is basically the same as the target theory except the invented
-predicate S_1/2 starts with A/2 instead of S/2. The important point is
-that it comes down to ASB - which produces a tree with an equal number
-of A and B leaves.
-
-Longer target theory with an invented predicate equivalent to 'S'/2:
-
-'S'(A, C) :- 'A'(A, B), 'B'(B, C).
-'S'(A, C) :- 'A'(A, B),'S_1'(B, C).
-'S_1'(A, C) :- 'S_2'(A, B),'B'(B, C).
-'S_2'(A, C) :- 'A'(A, B), B'(B, C).
-'S_2'(A, C) :- 'A'(A, B),'S_1'(B, C).
-
-As a DCG:
-
-'S' --> 'A', 'B'.
-'S' --> 'A', 'S_1'.
-'S_1' --> 'S_2', 'B'.
-'S_2' --> 'A', 'B'.
-'S_2' --> 'A', 'S_1'.
-'A' --> [a].
-'B' --> [b].
-
-Set depth_limits(5,2) to learn that one. It's easier to learn if you
-uncomment the fourth positive example. I know. A single example makes a
-difference.
-
-This is still equivalent to the three-clause target theory, but more
-broken up. It is also learned, but only after much search. In the
-process it also learns the following, which is wrong:
-
-S(A,B):-A(A,C),B(C,B).
-S(A,B):-A(A,C),S(C,B).
-S(A,B):-B(A,C),B(C,B).
-S(A,B):-B(A,C),S(C,B).
-
-?- phrase(anbn:'S', P).
-P = [a, b] ;
-P = [a, a, b] ;
-P = [a, a, a, b] ;
-P = [a, a, a, a, b] ;
-P = [a, a, a, a, a, b] ;
-P = [a, a, a, a, a, a, b] ;
-P = [a, a, a, a, a, a, a, b] ;
-P = [a, a, a, a, a, a, a, a, b] .
-
-Negative examples are needed to avoid learning this.
-*/

@@ -20,8 +20,9 @@ Includes examples for ancestor/2, father/2, grandfather/2 and male/2.
 Usage
 =====
 
-1. Set depth_limits(2,1).
+1. Set sufficient clause limits in configuration.pl:
 
+depth_limits(2,1).
 
 2. Run a query:
 

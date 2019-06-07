@@ -13,7 +13,9 @@ body literal, unlike in constants.pl.
 Usage
 =====
 
-1. Set depth_limits(4,0).
+1. Set sufficient clause limits in configuration.pl:
+
+depth_limits(4,0).
 
 2. Run a query:
 
