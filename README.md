@@ -3,9 +3,9 @@ Thelma - a Theory Learning Machine for Meta-Interpretive Learning
 
 Thelma is an Inductive Logic Programming system. In particular, it is an
 implementation of Meta-Interpretive Learning [(Muggleton et al. 2014)], similar
-to [Metagol]. It learns first order logic hypotheses in the form of dyadic
-datalog definite programs. It is trained on examples given as ground unit
-clauses and with background knowledge given as arbitrary Prolog programs. 
+to [Metagol]. It learns first order logic theories in the form of dyadic datalog
+definite programs. It is trained on examples given as ground unit clauses and
+with background knowledge given as arbitrary Prolog programs. 
 
 As a MIL implementation, Thelma can perform predicate invention and can learn
 recursive hypotheses, including hypotheses with mutually recursive clauses.
@@ -75,20 +75,20 @@ Grammar from three positive examples.
    % Clauses: 2; Invented: 1
    % Clauses: 3; Invented: 0
    % Clauses: 3; Invented: 1
-   S(A,B):-A(A,C),B(C,B).
-   S(A,B):-S_1(A,C),B(C,B).
-   S_1(A,B):-A(A,C),S(C,B).
-   true ;
+   'S'(A,B):-'A'(A,C),'B'(C,B).
+   'S'(A,B):-'S_1'(A,C),'B'(C,B).
+   'S_1'(A,B):-'A'(A,C),'S'(C,B).
+   true .
    ```
 
    The learned hypothesis is printed to the Swi-Prolog console by
    `print_clauses/1`.
     
-   In the learned hypothesis the predicate `S_1/2` is _invented_. Although it is
-   not given in the background knowledge, it is necessary to complete the
+   In the learned hypothesis the predicate `'S_1'/2` is _invented_. Although it
+   is not given in the background knowledge, it is necessary to complete the
    learning process. It is reconstructed from existing background knowledge and
-   metarules, during learning. Note also that `S_1/2` is mutually recursive with
-   `S/2`.
+   metarules, during learning. Note also that `'S_1'/2` is mutually recursive
+   with `'S'/2`.
 
 
 ### Understanding the training results

@@ -25,10 +25,10 @@ Usage
 % Clauses: 2; Invented: 1
 % Clauses: 3; Invented: 0
 % Clauses: 3; Invented: 1
-S(A,B):-A(A,C),B(C,B).
-S(A,B):-S_1(A,C),B(C,B).
-S_1(A,B):-A(A,C),S(C,B).
-true ;
+'S'(A,B):-'A'(A,C),'B'(C,B).
+'S'(A,B):-'S_1'(A,C),'B'(C,B).
+'S_1'(A,B):-'A'(A,C),'S'(C,B).
+true .
 ==
 
 This translates to the following DCG notation:
