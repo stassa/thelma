@@ -51,7 +51,7 @@ Grammar from three positive examples.
    editor) and set the name of the experiment file to `anbn.pl`:
    
    ```prolog
-   experiment_file('data/anbn.pl',anbn).
+   experiment_file('data/examples/anbn.pl',anbn).
    ```
    
    Also set appropriate upper limits for total clauses and invented clauses:
