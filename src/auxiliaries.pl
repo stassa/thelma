@@ -32,7 +32,31 @@
 %
 %	Assign an automatic ordering to the Herbrand base.
 %
-%	Target is the symbol and arity of the predicate to be learned.
+%	Description
+%	-----------
+%
+%	Target can be one of two things:
+%	a) A compound, Q/N, the symbol and arity of a target predicate.
+%	b) A list of predicates' symbols and arities.
+%
+%	If Target is a compound, Q/N, it's used to access the
+%	definitions of the predicates declared as background knowledge
+%	for the target predicate Q/N in the currently configured
+%	experiment file.
+%
+%	If Target is a list of symbols and arities, it is used to
+%	accesss the definitions of the predicates with those symbols and
+%	arities in the currently configured experiment file.
+%
+%	The first option allows quick experimentation with the settings
+%	in an experiment file. The second option allows for finer
+%	control, e.g. to check the ordering of arbitrary combinations of
+%	background predicates.
+%
+%	Note however that if you pass in a list of predicates' symbols
+%	and arities as Target, their definitions must be in the current
+%	experiment file module, or a module imported by the experiment
+%	file module, otherwise an existence error will be raised.
 %
 %	Motivation
 %	----------
@@ -107,16 +131,24 @@
 %	Constants. If it is set to "higher", the highest ordering is
 %	used instead.
 %
-order_constraints(T,[],[]):-
+%	@tbd This could be refactored to allow passing an arbitrary list
+%	of predicate indicators defined in any module (not just the
+%	current experiment file), or, even better, an arbitrary list of
+%	predicate definitions.
+%
+order_constraints(F/A,Ps,Cs):-
+% Allow a target predicate's symbol as first argument.
+	!
+	,configuration:experiment_file(_P,M)
+	,M:background_knowledge(F/A,BK)
+	,order_constraints(BK,Ps,Cs).
+order_constraints([],[],[]):-
 % BK may be empty! e.g. see data/constants.pl
-	configuration:experiment_file(_P,M)
-	,M:background_knowledge(T,[])
-	,!.
-order_constraints(T,Ps,Cs):-
+	!.
+order_constraints(BK,Ps,Cs):-
 	configuration:experiment_file(_P,M)
 	,configuration:default_ordering(D)
 	,must_be(oneof([lower,higher]),D)
-	,M:background_knowledge(T,BK)
 	,predicate_order(BK,Ps)
 	,constants_indexing(M,BK,Is)
 	,unique_indices(Is,Is_,D)
@@ -132,6 +164,9 @@ order_constraints(T,Ps,Cs):-
 %
 %	@tbd Note that this is essentially the same as
 %	predicate_signature/1.
+%
+%	@tbd What is this even doing? Just getting all F/A in the list
+%	BK? Why not use the list directly?
 %
 predicate_order(BK,Ps):-
 	findall(F/A
