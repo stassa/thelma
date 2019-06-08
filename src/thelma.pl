@@ -21,7 +21,7 @@ learn(Pos,Neg,Prog):-
 	,debug(depth,'Clauses: ~w; Invented: ~w',[C_,I_])
 	,prove(T,C_,Pos,Po-Co,[],Ps)
 	,disprove(Neg,Ps)
-	,project_metasubs(Ps, true, Prog_)
+	,project_metasubs(Ps, Prog_)
 	,sort(Prog_,Prog).
 learn(_Pos,_Neg,_Prog):-
 	cleanup_experiment
@@ -274,7 +274,7 @@ disprove([],_Ms):-
 % Skip further processing if there are no negative examples.
 	!.
 disprove(Neg,Ms):-
-	project_metasubs(Ms,false,Prog)
+	project_metasubs(Ms,Prog)
 	,assert_program(thelma,Prog,Refs)
 	% Succeed if the program fails, otherwise fail;
 	% Erase the newly asserted clauses eitherwise.
@@ -289,23 +289,16 @@ disprove(Neg,Ms):-
 	 ).
 
 
-%!	project_metasubs(+Metasubstitutions,+Skolemise,-Program) is det.
+%!	project_metasubs(+Metasubstitutions,-Program) is det.
 %
 %	Project a list of Metasubstitutions to a Program.
 %
-%	Skolemise is a boolean denoting whether Program should be
-%	skolemised or not.
-%
-project_metasubs(Ms,S,Prog):-
+project_metasubs(Ms,Prog):-
 	findall(C
 		,(member(Mi,Ms)
 		 ,project_metasub(Mi,C)
-		 ,(   S
-		  ->  numbervars(C)
-		  ;   true
-		  )
 		 )
-		,Prog).
+	       ,Prog).
 
 
 %!	project_metasub(+Metasubstitution,-Clause) is det.

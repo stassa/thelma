@@ -461,11 +461,13 @@ cleanup_metarules:-
 %
 print_clauses(Cs):-
 	forall(member(C,Cs)
-	      ,(write_term(C, [fullstop(true)
-			      ,nl(true)
-			      ,numbervars(true)
-			      ,quoted(true)
-			      ])
+	      ,(copy_term(C,C_)
+	       ,numbervars(C_)
+	       ,write_term(C_, [fullstop(true)
+			       ,nl(true)
+			       ,numbervars(true)
+			       ,quoted(true)
+			       ])
 	       )
 	      ).
 
