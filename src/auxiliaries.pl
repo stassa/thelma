@@ -160,18 +160,20 @@ order_constraints(BK,Ps,Cs):-
 
 %!	predicate_order(+Background,-Order) is det.
 %
-%	Order predicates by their appearance in the Background.
+%	Derive a lexicographic Order on Background predicates.
 %
-%	@tbd Note that this is essentially the same as
-%	predicate_signature/1.
+%	Background is a list of predicate symbols and arities of
+%	background predicates defined in the current experiment file.
+%	Order is the same list ordered by lexicographic ordering.
 %
-%	@tbd What is this even doing? Just getting all F/A in the list
-%	BK? Why not use the list directly?
+%	@tbd Currently this simply returns the list Background in the
+%	same way it receives it. The purpose of having a separate
+%	predicate is that I'd also like to allow the user to set a
+%	specific ordering to override the ordering in which background
+%	predicates are declared in an experiment file, or even to
+%	declare some more complex ordering logic.
 %
-predicate_order(BK,Ps):-
-	findall(F/A
-	       ,member(F/A,BK)
-	       ,Ps).
+predicate_order(BK,BK).
 
 
 %!	constants_indexing(+Module,+Background,-Indexed) is det.
