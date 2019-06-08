@@ -1,4 +1,4 @@
-:-module(thelma, [learn/3
+:-module(thelma, [learn/2
 		 ,learn/5
 		 ]).
 
@@ -8,17 +8,24 @@
 /** <module> A Meta-Interpretive Learning system.
 */
 
-
-%!	learn(+Positive,+Negative,-Program) is nondet.
+%!	learn(+Predicate,-Definition) is nondet.
 %
-%	Learn a Program from Positive and Negative examples.
+%	Learn a Definition of a predicate.
 %
-learn(Pos,Neg,Prog):-
-	configuration:experiment_file(_P, M)
-	,target_predicate(Pos,T)
-	,M:background_knowledge(T,BK)
-	,M:metarules(T,MS)
+%	High level interface to learn/5 with data taken from
+%	experiment_data/5, by passing Predicate as the target.
+%
+%	Use this predicate to learn from the examples, background
+%	knowledge and metarules declared for Predicate in the current
+%	experiment file.
+%
+%	Use learn/5 to learn from an arbitrary set of examples,
+%	metarules and background knowledge.
+%
+learn(T,Prog):-
+	experiment_data(T,Pos,Neg,BK,MS)
 	,learn(Pos,Neg,BK,MS,Prog).
+
 
 
 %!	learn(+Pos,+Neg,+Background,+Metarules,-Program) is nondet.
@@ -27,6 +34,13 @@ learn(Pos,Neg,Prog):-
 %
 %	Returns each Program possible to learn from the given data on
 %	successive backtracking.
+%
+%	Use this predicate to learn from arbitrary lists of examples,
+%	background knowledge and metarules. However, note that
+%	background predicates must be defined and accessible to this
+%	module, i.e. they must be defined in module user, or a module
+%	exporting to module user. The current experiment file exports to
+%	module user.
 %
 learn(Pos,Neg,BK,MS,Prog):-
 	configuration:depth_limits(C,I)
