@@ -118,8 +118,8 @@ target_predicate([[F|Args]|_Es],F/A):-
 %	search. More precisely, it's the maximum size of a theory, i.e.
 %	the maximum number of elements in the list Metasubstitutions.
 %
-prove(K,Pos,BK,MS,Po-Co,Ss):-
-	prove(K,Pos,BK,MS,Po-Co,[],Ss_)
+prove(K,Pos,BK,MS,Os,Ss):-
+	prove(K,Pos,BK,MS,Os,[],Ss_)
 	,reverse(Ss_,Ss).
 
 
@@ -130,28 +130,28 @@ prove(K,Pos,BK,MS,Po-Co,Ss):-
 %
 prove(_K,[],_BK,_MS,_PS,Ss,Ss):-
 	!.
-prove(K,[A|As],BK,MS,PS-Cs,Acc,Bind):-
+prove(K,[A|As],BK,MS,Os,Acc,Bind):-
 	background_predicate(BK,A)
 	,!
 	,A_ =.. A
 	,user:call(A_)
-	,prove(K,As,BK,MS,PS-Cs,Acc,Bind).
-prove(K,[A|As],BK,MS,PS-Cs,Acc1,Bind):-
+	,prove(K,As,BK,MS,Os,Acc,Bind).
+prove(K,[A|As],BK,MS,Os,Acc1,Bind):-
 	member(Msub,Acc1)
-	,once(metasubstitution(MS,A,PS-Cs,Msub,Bs))
+	,once(metasubstitution(MS,A,Os,Msub,Bs))
 	% move cut here?
-	,prove(K,Bs,BK,MS,PS-Cs,Acc1,Acc2)
+	,prove(K,Bs,BK,MS,Os,Acc1,Acc2)
 	,! % Very red cut. Stops adding some
 	% redundant clauses- but will it stop
 	% adding necessary ones, also?
-	,prove(K,As,BK,MS,PS-Cs,Acc2,Bind).
-prove(K,[A|As],BK,MS,PS-Cs,Acc1,Bind):-
+	,prove(K,As,BK,MS,Os,Acc2,Bind).
+prove(K,[A|As],BK,MS,Os,Acc1,Bind):-
 	length(Acc1,N)
 	,N < K
-	,metasubstitution(MS,A,PS-Cs,Msub,Bs)
+	,metasubstitution(MS,A,Os,Msub,Bs)
 	,new_metasub(Msub,Acc1,Acc2)
-	,prove(K,Bs,BK,MS,PS-Cs,Acc2,Acc3)
-	,prove(K,As,BK,MS,PS-Cs,Acc3,Bind).
+	,prove(K,Bs,BK,MS,Os,Acc2,Acc3)
+	,prove(K,As,BK,MS,Os,Acc3,Bind).
 
 
 %!	background_predicate(+BK,+Atom) is det.
