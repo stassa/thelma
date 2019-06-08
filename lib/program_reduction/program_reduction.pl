@@ -1,4 +1,5 @@
-:-module(program_reduction, [reduction_report/1
+:-module(program_reduction, [reduction_report/3
+			    ,reduction_report/1
 			    ,program_reduction/3
 			    ]).
 
@@ -10,6 +11,27 @@
 
 */
 
+
+%!	reduction_report(+Program,+Reduction,+Redundant) is det.
+%
+%	Report on the Reduction of a Program.
+%
+reduction_report(P,R,D):-
+	writeln('Program clauses:')
+	,writeln('----------------')
+	,list_clauses(P)
+	,nl
+	,writeln('Program reduction:')
+	,writeln('------------------')
+        ,list_clauses(R)
+	,nl
+	,writeln('Redundant clauses:')
+	,writeln('------------------')
+        ,list_clauses(D)
+	,nl.
+
+
+
 %!	reduction_report(+Program) is det.
 %
 %       Report on redundant clauses in Program.
@@ -17,19 +39,8 @@
 %       Top-level interface to program_reduction/3.
 %
 reduction_report(P):-
-	program_reduction(P, H, R)
-	,writeln('Program clauses:')
-	,writeln('----------------')
-	,list_clauses(P)
-	,nl
-	,writeln('Program reduction:')
-	,writeln('------------------')
-        ,list_clauses(H)
-	,nl
-	,writeln('Redundant clauses:')
-	,writeln('------------------')
-        ,list_clauses(R)
-	,nl.
+	program_reduction(P,R,D)
+	,reduction_report(P,R,D).
 
 
 
