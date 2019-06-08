@@ -36,11 +36,11 @@ depth_limits(2,1).
 3. Run the following query to train Thelma on the data in this file:
 
 ==
-?- learn(ancestor/2,_Prog),print_clauses(_Prog).
+?- learn(ancestor/2,_Prog), print_clauses(_Prog).
 % Clauses: 1; Invented: 0
 % Clauses: 2; Invented: 0
-ancestor(A,B):-parent(A,C),ancestor(C,B).
 ancestor(A,B):-parent(A,B).
+ancestor(A,B):-parent(A,C),ancestor(C,B).
 true .
 ==
 

@@ -51,9 +51,7 @@ learn(Pos,Neg,BK,MS,Prog):-
 	,debug(depth,'Clauses: ~w; Invented: ~w',[C_,I_])
 	,prove(C_,Pos,BK,MS,Po-Co,Ps)
 	,disprove(Neg,Ps)
-	,project_metasubs(Ps, Prog_)
-	% msort/2 best.
-	,sort(Prog_,Prog).
+	,project_metasubs(Ps, Prog).
 learn(_Pos,_Neg,_BK,_MS,_Prog):-
 	cleanup_experiment
 	,fail.
@@ -121,7 +119,8 @@ target_predicate([[F|Args]|_Es],F/A):-
 %	the maximum number of elements in the list Metasubstitutions.
 %
 prove(K,Pos,BK,MS,Po-Co,Ss):-
-	prove(K,Pos,BK,MS,Po-Co,[],Ss).
+	prove(K,Pos,BK,MS,Po-Co,[],Ss_)
+	,reverse(Ss_,Ss).
 
 
 %!	prove(+Depth,+Atoms,+BK,+Metarules,+Orders,+Acc,-Metasubs)
@@ -129,9 +128,8 @@ prove(K,Pos,BK,MS,Po-Co,Ss):-
 %
 %	Business end of prove/7.
 %
-prove(_K,[],_BK,_MS,_PS,Ss,Ss_):-
-	!
-	,reverse(Ss,Ss_).
+prove(_K,[],_BK,_MS,_PS,Ss,Ss):-
+	!.
 prove(K,[A|As],BK,MS,PS-Cs,Acc,Bind):-
 	background_predicate(BK,A)
 	,!

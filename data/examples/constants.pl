@@ -36,7 +36,7 @@ true .
 
 Change the name of the predicate in the first argument of
 experiment_data/5 to one of the targets defined in
-background_knowledge/2, to learn definitions more predicates.
+background_knowledge/2, to learn definitions of more predicates.
 */
 
 configuration:metarule(unit_const, [P,X,Y], [], mec(P,X,Y) :- true).
