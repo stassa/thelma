@@ -1,4 +1,5 @@
 :-module(thelma, [learn/3
+		 ,learn/5
 		 ]).
 
 :-use_module(configuration).
@@ -10,20 +11,34 @@
 
 %!	learn(+Positive,+Negative,-Program) is nondet.
 %
-%	Learn a Program from Positive and Negative input examples.
+%	Learn a Program from Positive and Negative examples.
 %
 learn(Pos,Neg,Prog):-
+	configuration:experiment_file(_P, M)
+	,target_predicate(Pos,T)
+	,M:background_knowledge(T,BK)
+	,learn(Pos,Neg,BK,_,Prog).
+
+
+%!	learn(+Pos,+Neg,+Background,+Metarules,-Program) is nondet.
+%
+%	Learn a Program from the given data.
+%
+%	Returns each Program possible to learn from the given data on
+%	successive backtracking.
+%
+learn(Pos,Neg,BK,_MS,Prog):-
 	configuration:depth_limits(C,I)
 	,initialise_experiment
 	,target_predicate(Pos,T)
 	,depth_level(C,I,C_,I_)
-	,program_signature(I_,T,Po,Co)
+	,program_signature(I_,T,BK,Po,Co)
 	,debug(depth,'Clauses: ~w; Invented: ~w',[C_,I_])
 	,prove(T,C_,Pos,Po-Co,[],Ps)
 	,disprove(Neg,Ps)
 	,project_metasubs(Ps, Prog_)
 	,sort(Prog_,Prog).
-learn(_Pos,_Neg,_Prog):-
+learn(_Pos,_Neg,_BK,_MS,_Prog):-
 	cleanup_experiment
 	,fail.
 
@@ -41,17 +56,16 @@ depth_level(C,I,C_,I_):-
 	,I_ < C_.
 
 
-%!	program_signature(+Invented,+Target,-Predicates,-Constants) is
-%!	det.
+%!	program_signature(+Invented,+Target,+BK,-Predicates,-Constants)
+%!	is det.
 %
 %	Determine the predicate signature for a target program.
 %
-%	Determines the predicate signature and also the ordering of
-%	Predicates and Constants. It's just that the predicate ordering,
-%	in list Predicates, is also the predicate signature.
+%	Also calls order_constraints/3 to derive a lexicographic and
+%	interval ordering for Predicates and Constants.
 %
-program_signature(K,F/A,Ps,Cs):-
-	order_constraints(F/A,Ps_,Cs)
+program_signature(K,F/A,BK,Ps,Cs):-
+	order_constraints(BK,Ps_,Cs)
 	,invented_symbols(K,F/A,Ss)
 	,append([F/A|Ss],Ps_,Ps).
 
