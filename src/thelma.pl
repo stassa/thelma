@@ -17,7 +17,8 @@ learn(Pos,Neg,Prog):-
 	configuration:experiment_file(_P, M)
 	,target_predicate(Pos,T)
 	,M:background_knowledge(T,BK)
-	,learn(Pos,Neg,BK,_,Prog).
+	,M:metarules(T,MS)
+	,learn(Pos,Neg,BK,MS,Prog).
 
 
 %!	learn(+Pos,+Neg,+Background,+Metarules,-Program) is nondet.
@@ -34,9 +35,10 @@ learn(Pos,Neg,BK,MS,Prog):-
 	,depth_level(C,I,C_,I_)
 	,program_signature(I_,T,BK,Po,Co)
 	,debug(depth,'Clauses: ~w; Invented: ~w',[C_,I_])
-	,prove(T,C_,Pos,BK,MS,Po-Co,Ps)
+	,prove(C_,Pos,BK,MS,Po-Co,Ps)
 	,disprove(Neg,Ps)
 	,project_metasubs(Ps, Prog_)
+	% msort/2 best.
 	,sort(Prog_,Prog).
 learn(_Pos,_Neg,_BK,_MS,_Prog):-
 	cleanup_experiment
@@ -95,7 +97,7 @@ target_predicate([[F|Args]|_Es],F/A):-
 	length(Args,A).
 
 
-%!	prove(+Target,+Depth,+Atoms,+BK,+Metarules,+Orders,-Metasubstitutions)
+%!	prove(+Depth,+Atoms,+BK,+Metarules,+Orders,-Metasubstitutions)
 %!	is nondet.
 %
 %	Prove a list of Atoms and derive a list of Metasubstitutions.
@@ -104,39 +106,40 @@ target_predicate([[F|Args]|_Es],F/A):-
 %	search. More precisely, it's the maximum size of a theory, i.e.
 %	the maximum number of elements in the list Metasubstitutions.
 %
-prove(T,C_,Pos,BK,MS,Po-Co,Ss):-
-	prove(T,C_,Pos,BK,MS,Po-Co,[],Ss).
+prove(K,Pos,BK,MS,Po-Co,Ss):-
+	prove(K,Pos,BK,MS,Po-Co,[],Ss).
 
 
-%!	prove(+Target,+Depth,+Atoms,+BK,+Metarules,+Orders,+Acc,-Metasubs)
+%!	prove(+Depth,+Atoms,+BK,+Metarules,+Orders,+Acc,-Metasubs)
 %!	is nondet.
 %
 %	Business end of prove/7.
 %
-prove(_T,_C,[],_BK,_MS,_PS,Ss,Ss_):-
+prove(_K,[],_BK,_MS,_PS,Ss,Ss_):-
 	!
 	,reverse(Ss,Ss_).
-prove(T,K,[A|As],BK,MS,PS-Cs,Acc,Bind):-
+prove(K,[A|As],BK,MS,PS-Cs,Acc,Bind):-
 	background_predicate(BK,A)
 	,!
 	,A_ =.. A
 	,user:call(A_)
-	,prove(T,K,As,BK,MS,PS-Cs,Acc,Bind).
-prove(T,K,[A|As],BK,MS,PS-Cs,Acc1,Bind):-
+	,prove(K,As,BK,MS,PS-Cs,Acc,Bind).
+prove(K,[A|As],BK,MS,PS-Cs,Acc1,Bind):-
 	member(Msub,Acc1)
-	,once(metasubstitution(T,A,PS-Cs,Msub,Bs))
-	,prove(T,K,Bs,BK,MS,PS-Cs,Acc1,Acc2)
+	,once(metasubstitution(MS,A,PS-Cs,Msub,Bs))
+	% move cut here?
+	,prove(K,Bs,BK,MS,PS-Cs,Acc1,Acc2)
 	,! % Very red cut. Stops adding some
 	% redundant clauses- but will it stop
 	% adding necessary ones, also?
-	,prove(T,K,As,BK,MS,PS-Cs,Acc2,Bind).
-prove(T,K,[A|As],BK,MS,PS-Cs,Acc1,Bind):-
+	,prove(K,As,BK,MS,PS-Cs,Acc2,Bind).
+prove(K,[A|As],BK,MS,PS-Cs,Acc1,Bind):-
 	length(Acc1,N)
 	,N < K
-	,metasubstitution(T,A,PS-Cs,Msub,Bs)
+	,metasubstitution(MS,A,PS-Cs,Msub,Bs)
 	,new_metasub(Msub,Acc1,Acc2)
-	,prove(T,K,Bs,BK,MS,PS-Cs,Acc2,Acc3)
-	,prove(T,K,As,BK,MS,PS-Cs,Acc3,Bind).
+	,prove(K,Bs,BK,MS,PS-Cs,Acc2,Acc3)
+	,prove(K,As,BK,MS,PS-Cs,Acc3,Bind).
 
 
 %!	background_predicate(+BK,+Atom) is det.
@@ -148,8 +151,8 @@ background_predicate(BK,[F|Args]):-
 	,memberchk(F/A, BK).
 
 
-%!	metasubstitution(+Target,+Atom,+Signature,+Metasub,-Body) is
-%!	det.
+%!	metasubstitution(+Metarules,+Atom,+Signature,?Metasub,-Body) is
+%!	nondet.
 %
 %	Perform a second-order metasubstitution.
 %
@@ -158,28 +161,27 @@ background_predicate(BK,[F|Args]):-
 %	bound to first-order predicate terms from the predicate
 %	Signature.
 %
-metasubstitution(T,[S|Args],PS-Cs,sub(Id,[S/A|Ss]),Bs):-
+metasubstitution(MS,[S|Args],PS-Cs,sub(Id,[S/A|Ss]),Bs):-
 	atom_symbol_arity([S|Args],S/A)
-	,next_metarule(T,[Id,[S/A|Ss],Fs,[[S|Args]|Bs]])
+	,next_metarule(MS,[Id,[S/A|Ss],Fs,[[S|Args]|Bs]])
 	,second_order_bindings(PS,Fs,Ss)
 	,configuration:order_constraints(Id,[S/A|Ss],Fs,STs,FTs)
 	,order_tests(PS,Cs,STs,FTs).
 
 
-%!	next_metarule(+Target,-Metarule) is det.
+%!	next_metarule(+Metarules,-Metarule) is nondet.
 %
 %	Select the next Metarule for Target.
 %
-next_metarule(T,[Id,Ss,Fs,Bs]):-
-	configuration:experiment_file(_P,Mod)
-	,metarule_functor(F)
-	,Mod:metarules(T,Ms)
-	,member(Id,Ms)
+next_metarule(MS,[Id,Ss,Fs,Bs]):-
+	metarule_functor(F)
+	,member(Id,MS)
 	,M =.. [F,Id,Ss,Fs,Bs]
 	,user:call(M).
 
 
-%!	second_order_bindings(+Signature,+First_Order,-Bindings) is det.
+%!	second_order_bindings(+Signature,+First_Order,-Bindings) is
+%!	nondet.
 %
 %	Ground second order terms to symbols in the Signature.
 %
