@@ -14,21 +14,30 @@ predicate.
 Usage
 =====
 
-1. Set sufficient clause limits in configuration.pl:
-
-depth_limits(3,1).
-
-2. Run the following query:
+1. Ensure this file is set as the current experiment file in
+configuration.pl
 
 ==
-?- experiment_data('S'/2,_Pos,_Neg,_BK,_MS), learn(_Pos,_Neg,_Prog), print_clauses(_Prog).
+experiment_file('data/examples/anbn.pl',anbn).
+==
+
+2. Set sufficient clause limits in configuration.pl:
+
+==
+depth_limits(3,1).
+==
+
+3. Run the following query to train Thelma on the data in this file:
+
+==
+?- learn('S'/2,_Prog),print_clauses(_Prog).
 % Clauses: 1; Invented: 0
 % Clauses: 2; Invented: 0
 % Clauses: 2; Invented: 1
 % Clauses: 3; Invented: 0
 % Clauses: 3; Invented: 1
-'S'(A,B):-'A'(A,C),'B'(C,B).
 'S'(A,B):-'S_1'(A,C),'B'(C,B).
+'S'(A,B):-'A'(A,C),'B'(C,B).
 'S_1'(A,B):-'A'(A,C),'S'(C,B).
 true .
 ==

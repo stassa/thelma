@@ -5,10 +5,6 @@
 	       ,predecessor/2
 	       ]).
 
-even(0).
-even(A):-predecessor(A,B),even_1(B).
-even_1(A):-predecessor(A,B),even(B).
-
 /** <module> Experiment file for even/1 generator and acceptor.
 
 Example taken from the _MIL - predicate invention revisited_ paper.
@@ -23,13 +19,23 @@ learn mutually recursive theories.
 Usage
 =====
 
-1. Set sufficient clause limits in configuration.pl:
+1. Ensure this file is set as the current experiment file in
+configuration.pl
 
+==
+experiment_file('data/examples/even.pl',even).
+==
+
+2. Set sufficient clause limits in configuration.pl:
+
+==
 depth_limits(3,1).
+==
 
-2. Run the following query:
+3. Run the following query to train Thelma on the data in this file:
 
-?- experiment_data(even/1,_Pos,_Neg,_BK,_MS), learn(_Pos,_Neg,_Prog), print_clauses(_Prog).
+==
+?- learn(even/1,_Prog),print_clauses(_Prog).
 % Clauses: 1; Invented: 0
 % Clauses: 2; Invented: 0
 % Clauses: 2; Invented: 1
@@ -37,17 +43,20 @@ depth_limits(3,1).
 % Clauses: 3; Invented: 1
 even(0).
 even(A):-predecessor(A,B),even_1(B).
-even_1(A):-predecessor(A,B),even(B). % Invention of odd/1
+even_1(A):-predecessor(A,B),even(B).
 true .
+==
 
-4. Copy/paste the hypothesis into this file, reconsult it and test it:
+5. Copy/paste the hypothesis into this file, reconsult it and test it:
 
+==
 ?- findall(X, (even:even(X), \+ (X == 0 ; 0 is X mod 2)), Xs).
 Xs = [].
 
 ?- findall(X, (even:even(X), 0 is X mod 2), _Xs), writeln(_Xs).
 [0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,38,40,42,44,46,48,50,52,54,56,58,60,62,64,66,68,70,72,74,76,78,80,82,84,86,88,90,92,94,96,98,100]
 true.
+==
 
 Expanding the range of the learned theory
 =========================================

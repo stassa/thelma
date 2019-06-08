@@ -12,19 +12,31 @@ and one or more constants.
 Usage
 =====
 
-1. Set sufficient clause limits in configuration.pl:
+1. Ensure this file is set as the current experiment file in
+configuration.pl:
 
+==
+experiment_file('data/examples/constants.pl',constants).
+==
+
+2. Set sufficient clause limits in configuration.pl:
+
+==
 depth_limits(3,0).
+==
 
-2. Run a query:
+3. Run the following query to train Thelma on the data in this file:
 
-?- experiment_data(c_1/2,_Pos,_Neg,_BK,_MS), learn(_Pos,_Neg,_Prog), print_clauses(_Prog).
+==
+?- learn(c_1/2,_Prog),print_clauses(_Prog).
 % Clauses: 1; Invented: 0
 c_1(1,1).
-true ;
+true .
+==
 
 Change the name of the predicate in the first argument of
-experiment_data/5 to learn definitions of more predicates.
+experiment_data/5 to one of the targets defined in
+background_knowledge/2, to learn definitions more predicates.
 */
 
 configuration:metarule(unit_const, [P,X,Y], [], mec(P,X,Y) :- true).

@@ -13,23 +13,33 @@ body literal, unlike in constants.pl.
 Usage
 =====
 
-1. Set sufficient clause limits in configuration.pl:
+1. Ensure this file is set as the current experiment file in
+configuration.pl
 
+==
+experiment_file('data/examples/constants_2.pl',constants_2).
+==
+
+2. Set sufficient clause limits in configuration.pl:
+
+==
 depth_limits(4,0).
+==
 
-2. Run a query:
+3. Run the following query to train Thelma on the data in this file:
 
-?- experiment_data(const/2,_Pos,_Neg,_BK,_MS), learn(_Pos,_Neg,_Prog), print_clauses(_Prog).
+==
+?- learn(const/2,_Prog),print_clauses(_Prog).
 % Clauses: 1; Invented: 0
 % Clauses: 2; Invented: 0
 % Clauses: 3; Invented: 0
 % Clauses: 4; Invented: 0
-const(2,A):-successor(A,2).
-const(3,A):-successor(A,3).
 const(A,B):-successor(A,2),successor(2,B).
 const(A,B):-successor(A,3),successor(3,B).
-true ;
-false.
+const(2,A):-successor(A,2).
+const(3,A):-successor(A,3).
+true .
+==
 */
 
 configuration:metarule(inverse_const,[P,Q,X],[X,Y],mec(P,X,Y):-mec(Q,Y,X)).

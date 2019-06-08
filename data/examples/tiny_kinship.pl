@@ -20,18 +20,29 @@ Includes examples for ancestor/2, father/2, grandfather/2 and male/2.
 Usage
 =====
 
-1. Set sufficient clause limits in configuration.pl:
+1. Ensure this file is set as the current experiment file in
+configuration.pl
 
+==
+experiment_file('data/examples/tiny_kinship.pl',tiny_kinship).
+==
+
+2. Set sufficient clause limits in configuration.pl:
+
+==
 depth_limits(2,1).
+==
 
-2. Run a query:
+3. Run the following query to train Thelma on the data in this file:
 
-?- experiment_data(ancestor/2,_Pos,_Neg,_BK,_MS), learn(_Pos,_Neg,_Prog), print_clauses(_Prog).
+==
+?- learn(ancestor/2,_Prog),print_clauses(_Prog).
 % Clauses: 1; Invented: 0
 % Clauses: 2; Invented: 0
 ancestor(A,B):-parent(A,C),ancestor(C,B).
 ancestor(A,B):-parent(A,B).
 true .
+==
 
 Change ancestor/2 to one of the relations in background_knowledge/2 to
 learn definitions for those predicates.

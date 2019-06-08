@@ -48,13 +48,15 @@ Grammar from three positive examples.
 2. Edit the configuration file:
 
    Edit `configuration.pl` in the Swi-Prolog editor (or your favourite text
-   editor) and set the name of the experiment file to `anbn.pl`:
+   editor) and make sure the name of the current experiment file is set to
+   `anbn.pl`:
    
    ```prolog
    experiment_file('data/examples/anbn.pl',anbn).
    ```
    
-   Also set appropriate upper limits for total clauses and invented clauses:
+   Also set appropriate upper limits for total clauses and invented clauses in
+   the learned hypothesis:
    
    ```prolog
    depth_limits(3,1).
@@ -66,30 +68,21 @@ Grammar from three positive examples.
    ?- make.
    ```
 
-4. Run the following query to train Thelma and print the results.
+4. Run the following query to train Thelma on the data in `anbn.pl` and print
+   the results to the console.
    
    ```prolog
-   ?- experiment_data('S'/2,_Pos,_Neg,_BK,_MS), learn(_Pos,_Neg,_Prog), print_clauses(_Prog).
+   ?- learn('S'/2,_Prog),print_clauses(_Prog).
    % Clauses: 1; Invented: 0
    % Clauses: 2; Invented: 0
    % Clauses: 2; Invented: 1
    % Clauses: 3; Invented: 0
    % Clauses: 3; Invented: 1
-   'S'(A,B):-'A'(A,C),'B'(C,B).
    'S'(A,B):-'S_1'(A,C),'B'(C,B).
+   'S'(A,B):-'A'(A,C),'B'(C,B).
    'S_1'(A,B):-'A'(A,C),'S'(C,B).
    true .
    ```
-
-   The learned hypothesis is printed to the Swi-Prolog console by
-   `print_clauses/1`.
-    
-   In the learned hypothesis the predicate `'S_1'/2` is _invented_. Although it
-   is not given in the background knowledge, it is necessary to complete the
-   learning process. It is reconstructed from existing background knowledge and
-   metarules, during learning. Note also that `'S_1'/2` is mutually recursive
-   with `'S'/2`.
-
 
 ### Understanding the training results
 
@@ -105,11 +98,15 @@ BNF notation:
 This is a general definition of the a^nb^n grammar that covers all strings in
 the language and no strings outside the language, for arbitrary n. 
 
-See [Context Free Grammars] for an explanation of how a definition of a^nb^n
-like the one learned by Thelma works.
+In the learned hypothesis the predicate `'S_1'/2` is _invented_. Although it is
+not given in the background knowledge, it is necessary to complete the learning
+process. It is reconstructed from existing background knowledge and metarules,
+during learning. Note also that `'S_1'/2` is mutually recursive with `'S'/2`.
 
 The grammar learned by Thelma is a Prolog program and so it can be run both as a
-recogniser and a generator.
+recogniser and a generator. See [Context Free Grammars] for an explanation of
+how a Definite Claus Grammar definition of a^nb^n like the one learned by Thelma
+works.
 
 #### Run as a generator
 
