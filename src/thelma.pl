@@ -27,14 +27,14 @@ learn(Pos,Neg,Prog):-
 %	Returns each Program possible to learn from the given data on
 %	successive backtracking.
 %
-learn(Pos,Neg,BK,_MS,Prog):-
+learn(Pos,Neg,BK,MS,Prog):-
 	configuration:depth_limits(C,I)
 	,initialise_experiment
 	,target_predicate(Pos,T)
 	,depth_level(C,I,C_,I_)
 	,program_signature(I_,T,BK,Po,Co)
 	,debug(depth,'Clauses: ~w; Invented: ~w',[C_,I_])
-	,prove(T,C_,Pos,Po-Co,[],Ps)
+	,prove(T,C_,Pos,BK,MS,Po-Co,Ps)
 	,disprove(Neg,Ps)
 	,project_metasubs(Ps, Prog_)
 	,sort(Prog_,Prog).
@@ -95,8 +95,8 @@ target_predicate([[F|Args]|_Es],F/A):-
 	length(Args,A).
 
 
-%!	prove(+Target,+Depth_Limit,+Atoms,+Signature,+Acc,-Metasubstitutions)
-%!	is det.
+%!	prove(+Target,+Depth,+Atoms,+BK,+Metarules,+Orders,-Metasubstitutions)
+%!	is nondet.
 %
 %	Prove a list of Atoms and derive a list of Metasubstitutions.
 %
@@ -104,41 +104,48 @@ target_predicate([[F|Args]|_Es],F/A):-
 %	search. More precisely, it's the maximum size of a theory, i.e.
 %	the maximum number of elements in the list Metasubstitutions.
 %
-prove(_,_,[],_,MS,MS_):-
+prove(T,C_,Pos,BK,MS,Po-Co,Ss):-
+	prove(T,C_,Pos,BK,MS,Po-Co,[],Ss).
+
+
+%!	prove(+Target,+Depth,+Atoms,+BK,+Metarules,+Orders,+Acc,-Metasubs)
+%!	is nondet.
+%
+%	Business end of prove/7.
+%
+prove(_T,_C,[],_BK,_MS,_PS,Ss,Ss_):-
 	!
-	,reverse(MS,MS_).
-prove(T,K,[A|As],PS-Cs,Acc,Bind):-
-	background_predicate(T,A)
+	,reverse(Ss,Ss_).
+prove(T,K,[A|As],BK,MS,PS-Cs,Acc,Bind):-
+	background_predicate(BK,A)
 	,!
 	,A_ =.. A
 	,user:call(A_)
-	,prove(T,K,As,PS-Cs,Acc,Bind).
-prove(T,K,[A|As],PS-Cs,Acc1,Bind):-
-	member(MS,Acc1)
-	,once(metasubstitution(T,A,PS-Cs,MS,Bs))
-	,prove(T,K,Bs,PS-Cs,Acc1,Acc2)
+	,prove(T,K,As,BK,MS,PS-Cs,Acc,Bind).
+prove(T,K,[A|As],BK,MS,PS-Cs,Acc1,Bind):-
+	member(Msub,Acc1)
+	,once(metasubstitution(T,A,PS-Cs,Msub,Bs))
+	,prove(T,K,Bs,BK,MS,PS-Cs,Acc1,Acc2)
 	,! % Very red cut. Stops adding some
 	% redundant clauses- but will it stop
 	% adding necessary ones, also?
-	,prove(T,K,As,PS-Cs,Acc2,Bind).
-prove(T,K,[A|As],PS-Cs,Acc1,Bind):-
+	,prove(T,K,As,BK,MS,PS-Cs,Acc2,Bind).
+prove(T,K,[A|As],BK,MS,PS-Cs,Acc1,Bind):-
 	length(Acc1,N)
 	,N < K
-	,metasubstitution(T,A,PS-Cs,MS,Bs)
-	,new_metasub(MS,Acc1,Acc2)
-	,prove(T,K,Bs,PS-Cs,Acc2,Acc3)
-	,prove(T,K,As,PS-Cs,Acc3,Bind).
+	,metasubstitution(T,A,PS-Cs,Msub,Bs)
+	,new_metasub(Msub,Acc1,Acc2)
+	,prove(T,K,Bs,BK,MS,PS-Cs,Acc2,Acc3)
+	,prove(T,K,As,BK,MS,PS-Cs,Acc3,Bind).
 
 
-%!	background_predicate(+Target,+Atom) is det.
+%!	background_predicate(+BK,+Atom) is det.
 %
-%	True when Atom is an atom of a background knowledge predicate.
+%	True when Atom is an atom of a predicate in the BK.
 %
-background_predicate(T,[F|Args]):-
-	configuration:experiment_file(_P,M)
-	,M:background_knowledge(T,BK)
-	,length(Args, A)
-	,member(F/A, BK).
+background_predicate(BK,[F|Args]):-
+	length(Args, A)
+	,memberchk(F/A, BK).
 
 
 %!	metasubstitution(+Target,+Atom,+Signature,+Metasub,-Body) is
