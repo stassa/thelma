@@ -9,19 +9,6 @@ with background knowledge given as arbitrary Prolog programs.
 
 As a MIL implementation, Thelma can perform predicate invention and can learn
 recursive hypotheses, including hypotheses with mutually recursive clauses.
-Thelma is still new and feature-light, for the time being.
-
-The plan is to keep Thelma's interface and source code as straightforward and
-user-friendly as possible, sacrificing efficiency where necessary. That would
-make it more appropriate as an introductory system, to help teach interested
-beginners the basic concepts of MIL. For applications that require efficiency
-and speed, Metagol should be preferred.
-
-Planned additional features include: an "experiment harness", comprising
-libraries for sampling, training, evaluation and logging; a MIL dataset
-generator; implementations of Plotkin's clause and program reduction algorithms;
-a library for bagging aggregation for learning in noisy domains; etc assorted
-libraries.
 
 Example of use
 --------------
@@ -370,6 +357,23 @@ architectures, Support Vector Machines' kernels, distance functions, Bayesian
 priors- are all instances of such bias encoding. The advantage of MIL and ILP
 algorithms in general is that inductive bias has a clear and precise definition
 that is easy to inspect and modify.
+
+Future work
+-----------
+
+Thelma is still new and feature-light, for the time being.
+
+The plan is to keep Thelma's interface and source code as straightforward and
+user-friendly as possible, sacrificing efficiency where necessary. That would
+make it more appropriate as an introductory system, to help teach interested
+beginners the basic concepts of MIL. For applications that require efficiency
+and speed, Metagol should be preferred.
+
+Planned additional features include: an "experiment harness", comprising
+libraries for sampling, training, evaluation and logging; a MIL dataset
+generator; implementations of Plotkin's clause and program reduction algorithms;
+a library for bagging aggregation for learning in noisy domains; etc assorted
+libraries.
 
 ### Further reading
 
