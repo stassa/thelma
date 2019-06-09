@@ -137,6 +137,14 @@
 %	predicate definitions.
 %
 order_constraints(F/A,Ps,Cs):-
+% Allow the user to override constraints - undocumented.
+	experiment_file(_P,M)
+	,predicate_property(M:predicate_order(_,_), defined)
+	,M:predicate_order(F/A,Ps)
+	,predicate_property(M:constant_order(_,_), defined)
+	,M:constant_order(F/A,Cs)
+	,!.
+order_constraints(F/A,Ps,Cs):-
 % Allow a target predicate's symbol as first argument.
 	!
 	,configuration:experiment_file(_P,M)
