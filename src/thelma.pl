@@ -8,19 +8,25 @@
 /** <module> A Meta-Interpretive Learning system.
 */
 
-%!	learn(+Predicate,-Definition) is nondet.
+%!	learn(+Target,-Definition) is nondet.
 %
-%	Learn a Definition of a predicate.
+%	Learn a Definition of a Target predicate.
 %
-%	High level interface to learn/5 with data taken from
-%	experiment_data/5, by passing Predicate as the target.
-%
-%	Use this predicate to learn from the examples, background
-%	knowledge and metarules declared for Predicate in the current
+%	Target is the predicate symbol and arity of the predicate to be
+%	learned. Target is used to collect positive and negative
+%	examples, background knowledge and metarules from the current
 %	experiment file.
 %
-%	Use learn/5 to learn from an arbitrary set of examples,
-%	metarules and background knowledge.
+%	Definition is a list of definite datalog clauses, the
+%	learned definition of target.
+%
+%	learn/2 is a high level interface to learn/5 with data taken
+%	from experiment_data/5, by passing Predicate as the target.
+%
+%	Use this predicate to learn from the examples, background
+%	knowledge and metarules declared for Target in the current
+%	experiment file. Use learn/5 to learn from an arbitrary set of
+%	examples, metarules and background knowledge.
 %
 learn(T,Prog):-
 	experiment_data(T,Pos,Neg,BK,MS)
@@ -32,8 +38,25 @@ learn(T,Prog):-
 %
 %	Learn a Program from the given data.
 %
-%	Returns each Program possible to learn from the given data on
-%	successive backtracking.
+%	Pos, Neg are lists of unit clauses representing positive and
+%	negative examples, respectively, of the predicate to be
+%	learned: the _target predicate_.
+%
+%	Background is a list of predicate symbols and arities, S/N, of
+%	the predicates to be used as background knowledge. Each
+%	predicate in the list Background must have a definition in
+%	module user or a module exporting to module user (e.g. the
+%	current experiment file).
+%
+%	Metarules is a list of atoms, the names of metarules to be used
+%	in learning.
+%
+%	Program is a list of definite Datalog clauses, the learned
+%	definition of the target predicate. Traditionally a program
+%	learned by an ILP algorithm is known as a _hypothesis_.
+%
+%	learn/5 returns each Program possible to learn from the given
+%	data on successive backtracking.
 %
 %	Use this predicate to learn from arbitrary lists of examples,
 %	background knowledge and metarules. However, note that
@@ -58,9 +81,43 @@ learn(_Pos,_Neg,_BK,_MS,_Prog):-
 
 
 %!	depth_level(+Clause_Max,+Invented_Max,-Clauses,-Invented) is
-%!	det.
+%!	nondet.
 %
 %	Increment the search depth level.
+%
+%	Clause_Max, Invented_Max, Clauses and Invented are integers.
+%	Clauses and Invented increase by one on backtracking. Clauses
+%	ranges from 1 to Clauses_Max. Invented ranges from 0 to
+%	Invented_Max or Clause-Max - 1, whichever is lower.
+%
+%	Explanation
+%	===========
+%
+%	Thelma performs an iterative deepening search for a _hypothesis_
+%	that explains its training examples.
+%
+%	A hypothesis is a list of definite datalog clauses that may
+%	include definitions of one or more invented predicates. The
+%	depth of the search at each iteration corresponds to the _size_
+%	of the hypothesis, defined as the number of all clauses in the
+%	hypothesis.
+%
+%	This predicate is responsible for controlling the depth of the
+%	search by incrementing the values of Clauses and Invented.
+%
+%	Clauses is the maximum hypothesis size at the current search
+%	depth. Invented is the maximum number of clauses in all invented
+%	definitions in the hypothesis at the current search depth.
+%
+%	Clause_Max and Invented_Max are the maximum number of all
+%	clauses in the hypothesis and the maximum number of all clauses
+%	of invented predicates in the hypothesis, in the entire search.
+%
+%	Clauses and Invented are first bound to Clauses=1, Invented=0
+%	and then to that number plus 1 on each successive backtracking
+%	into depth_level/4. The search exits without further
+%	backtracking when Clauses is equal to Clause_Max and Invented
+%	equal to Invented_Max, or when no more hypotheses can be found.
 %
 depth_level(1,0,1,0):-
 	!.
@@ -73,10 +130,37 @@ depth_level(C,I,C_,I_):-
 %!	program_signature(+Invented,+Target,+BK,-Predicates,-Constants)
 %!	is det.
 %
-%	Determine the predicate signature for a target program.
+%	Construct the program signature for a learning attempt.
 %
-%	Also calls order_constraints/3 to derive a lexicographic and
-%	interval ordering for Predicates and Constants.
+%	The _program signature_ is a list of predicate symbols that can
+%	be used to form a hypothesis. This list consists of:
+%	a) The symbol and arity of the target predicate, at its head.
+%	b) The symbols and arities of invented predicates, following.
+%	c) The symbols and arities of background predicates ordered by
+%	lexicographic order, at the end.
+%
+%	Invented is the maximum number of all clauses in invented
+%	definitions in a hypothesis in the current search depth.
+%
+%	Target is the symbol and arity of the target predicate.
+%
+%	BK is a list of symbols and arities of predicates to be used as
+%	background knowledge for Target.
+%
+%	Predicates is the program signature. The order of symbols and
+%	arities of background knowledge predicates in BK is ordered by a
+%	call to order_constraints/3.
+%
+%	Constants is the list of constants in the Herbrand universe of
+%	the background knowledge predicates, also ordered by a call to
+%	order_constraints/3.
+%
+%	@tbd It is a little strange that this predicate returns the list
+%	of constants, alongside the program signature. Perhaps the call
+%	to order_constraints/3 can be be moved outside this predicate,
+%	in the body of learn/5. Then program_signature/3 can take the
+%	resutling ordered list of BK predicates, add the symbols of the
+%	target predicate and invented predicates to it, and return it.
 %
 program_signature(K,F/A,BK,Ps,Cs):-
 	order_constraints(BK,Ps_,Cs)
@@ -84,9 +168,22 @@ program_signature(K,F/A,BK,Ps,Cs):-
 	,append([F/A|Ss],Ps_,Ps).
 
 
-%!	invented_symbols(+Symbols,+Target_Symbol,-Invented) is det.
+%!	invented_symbols(+Symbols,+Target,-Invented) is det.
 %
 %	Create new symbols for Invented predicates.
+%
+%	Symbols is an integer, the number of invented predicates that
+%	may be defined in the current search iteration.
+%
+%	Target is the symbol and arity of the target predicate.
+%
+%	Invented is a list of symbols and arities of invented predicates
+%	that may be defined in the current search iteration. Each
+%	invented predicate has the symbol of Target indexed by an
+%	integer from 1 to Symbols and the same arity as Target.
+%
+%	@tbd What happens if a predicate must be invented with an arity
+%	different than the arity of Target?
 %
 invented_symbols(K,F/A,Ss):-
 	findall(S_/A
@@ -100,10 +197,16 @@ invented_symbols(K,F/A,Ss):-
 %
 %	Determine the Target predicate from a set of Examples.
 %
-%	Target is a predicate indicator.
+%	Examples is a list of lists, where each sublist is an atom in
+%	the form of a list, [F|As], such that F is the predicate symbol
+%	of the atom and As is the list of its terms.
 %
-%	Makes no attempt to check that Examples are all atoms of the
-%	same predicate, etc.
+%	Target is the symbol and arity of the learning target. The
+%	predicate symbol and arity of Target are the predicate symbol
+%	and number of terms in the first sub-list of Examples.
+%
+%	target_predicate/2 makes no attempt to check that Examples are
+%	all atoms of the same predicate, etc.
 %
 target_predicate([[F|Args]|_Es],F/A):-
 	length(Args,A).
@@ -114,9 +217,40 @@ target_predicate([[F|Args]|_Es],F/A):-
 %
 %	Prove a list of Atoms and derive a list of Metasubstitutions.
 %
-%	Depth_Limit is the maximum depth for the iterative deepening
-%	search. More precisely, it's the maximum size of a theory, i.e.
-%	the maximum number of elements in the list Metasubstitutions.
+%	Depth is the maximum depth for the iterative deepening search.
+%	It's the maximum size of a hypothesis, i.e. the maximum number
+%	of elements in the list Metasubstitutions.
+%
+%	Atoms is a list of positive examples of the learning target. It
+%	is a list of lists where each sublist is an atom in the form of
+%	a list [F|As], where F the symbol of the target predicate and As
+%	the list of the atom's terms.
+%
+%	BK is a list of predicate symbols and arities of the background
+%	knowledge predicates for the learning target.
+%
+%	Metarules is a list of atoms, the names of metarules for the
+%	learning target.
+%
+%	Orders is a term Ps-Cs, where Ps is the program signature and Cs
+%	is the _constant signature_ a list of all constants in the
+%	Herbrand universe of the background predicates ordered by
+%	interval inclusion order.
+%
+%	Metasubstitutions is a list of metasubstitutions. Each
+%	metasubstitution is a Prolog coumpound, sub(Id, Ps). Id is the
+%	name of a metarule in Metarules and Ps is a list of symbols and
+%	arities of predicates in the program signature.
+%
+%	When prove/6 exits, each sub/2 term in the list of
+%	Metasubstitutions is projected onto the corresponding metarule
+%	to form a clause in a hypothesis. The hypothesis is then tested
+%	for consistency with the negative examples in disprove/2 and
+%	returned if it is consistent.
+%
+%	On backtracking, each list of metasubstitutions representing a
+%	hypothesis that is correct with respect to the positive examples
+%	and consistent withe the negative examples are returned.
 %
 prove(K,Pos,BK,MS,Os,Ss):-
 	prove(K,Pos,BK,MS,Os,[],Ss_)
@@ -156,7 +290,13 @@ prove(K,[A|As],BK,MS,Os,Acc1,Bind):-
 
 %!	background_predicate(+BK,+Atom) is det.
 %
-%	True when Atom is an atom of a predicate in the BK.
+%	True when Atom is an atom of a predicate in BK.
+%
+%	BK is a list of symbols and arities of predicates given as
+%	background knowledge.
+%
+%	Atom is an atom represented as a list, [F|As], where F the
+%	symbol of the atom's predicate and As the atom's list of terms.
 %
 background_predicate(BK,[F|Args]):-
 	length(Args, A)
@@ -168,10 +308,26 @@ background_predicate(BK,[F|Args]):-
 %
 %	Perform a second-order metasubstitution.
 %
-%	Metasub is a term sub(Id,Hs), where Id is the id of a metarule
-%	and Hs is a list of second-order variables, to be eventually
-%	bound to first-order predicate terms from the predicate
+%	Metarules is a list of constants, the names of metarules for a
+%	learning target.
+%
+%	Atom is an atom represented as a list, [F|As], where F the
+%	symbol of the atom's predicate and As the atom's list of terms.
+%
+%	Signature is the program signature.
+%
+%	Metasub is a Prolog compound sub(Id,Hs), where Id is the id of a
+%	metarule and Hs is a list of second-order variables, to be
+%	eventually bound to the predicate symbols and arities in
 %	Signature.
+%
+%	Body is a list of atoms in list form, [F|As], the body literals
+%	of the clause resulting from the projection fo Metasub to one of
+%	the metarules named in Metarules.
+%
+%	See project_metasubs/2 for an explanation of how a
+%	metasubstitution is projected onto a metarule to produce a
+%	clause.
 %
 metasubstitution(MS,[S|Args],PS-Cs,sub(Id,[S/A|Ss]),Bs):-
 	atom_symbol_arity([S|Args],S/A)
@@ -185,6 +341,21 @@ metasubstitution(MS,[S|Args],PS-Cs,sub(Id,[S/A|Ss]),Bs):-
 %
 %	Select the next Metarule for Target.
 %
+%	Metarules is a list of constants, the names of metarules for a
+%	learning target.
+%
+%	Metarule is a Prolog compound of the form:
+%	==
+%	F(Id, Ss, Fs, Bs)
+%	==
+%
+%	Where F is the metarule symbol defined in metarule_functor/1; Id
+%	is the name of a metarule in Metarules; Ss is the list of
+%	existentially quantified terms in the metarule; Fs is the list
+%	of universally quantified terms in the metarule; and Bs is a
+%	list of atoms in list form, [F|As], the body literals in the
+%	metarule.
+%
 next_metarule(MS,[Id,Ss,Fs,Bs]):-
 	metarule_functor(F)
 	,member(Id,MS)
@@ -192,10 +363,37 @@ next_metarule(MS,[Id,Ss,Fs,Bs]):-
 	,user:call(M).
 
 
-%!	second_order_bindings(+Signature,+First_Order,-Bindings) is
+%!	second_order_bindings(+Signature,+Constants,?Bindings) is
 %!	nondet.
 %
-%	Ground second order terms to symbols in the Signature.
+%	Bind second order terms to symbols in the Signature.
+%
+%	Signature is the program signature.
+%
+%	Constants is the constant signature, the list of constants in
+%	the Herbrand universe of predicates in the background knowledge
+%	ordered by interval inclusion order.
+%
+%	Bindings is a list of the existentially quantified terms in a
+%	metarule. Each can be one of the following:
+%	a) A term S/A, where both F and A are variables
+%	b) A constant, or,
+%	c) A single variable.
+%
+%	When a member of Bindings is a term S/A, S is bound to a symbol
+%	and arity of a predicate in Signature. All possible bindings are
+%	generated on backtracking.
+%
+%	When a member of Bindings is a constant, it is left alone.
+%
+%	When a member of Bindings is a single variable, if that variable
+%	is also in the list Constants, it is understood to be a constant
+%	in the learned hypothesis. All such variables must be together
+%	at the end of the list Bindings.
+%
+%	The identity of two variables is tested in bound_constant/2 by
+%	first skolemising all variables in Bindings and then checking
+%	whether two skolemised terms match.
 %
 second_order_bindings(_,_,[]):-
 	!.
@@ -218,6 +416,13 @@ second_order_bindings(PS,Fs,[S/A|Ss]):-
 %	is an atomic Prolog term, or if it is a variable that is also in
 %	the set of First_order variables in the metarule.
 %
+%	If Term is a variable, to test that it is included in
+%	First_order, first Term and First_order are copied to a list
+%	[Term_1|First_order_1]. Then, this list is skolemised (by
+%	numbervars/3). Finally, First_order_1 is searched for Term_1.
+%	bound_constant/2 succeeds only if Term is a constant, or if
+%	Term_1 is in First_order_1.
+%
 bound_constant(C,_Fs):-
 	atomic(C)
 	,!.
@@ -227,9 +432,16 @@ bound_constant(C,Fs):-
 	,memberchk(C_,Fs_).
 
 
-%!	atom_symbol_arity(+Atom,-Predicate_Indicator) is det.
+%!	atom_symbol_arity(+Atom,-Predicate) is det.
 %
 %	Figure out the symbol and arity of an Atom given as a list.
+%
+%	Atom is an atom represented as a list, [F|As], where F the
+%	symbol of the atom's predicate and As the atom's list of terms.
+%
+%	Predicate is a predicate indicator, F/A, where the predicate
+%	symbol, F, is the predicate symbol in Atom and the arity, A, is
+%	the length of the list of terms, As, in Atom.
 %
 atom_symbol_arity([A|As],A/N):-
 	length(As,N).
@@ -238,7 +450,14 @@ atom_symbol_arity([A|As],A/N):-
 %!	order_tests(+Predicates,+Constants,+First_Order,+Second_Order)
 %!	is det.
 %
-%	Test the ordering constraints associated with a metarule.
+%	Test the order constraints associated with a metarule.
+%
+%	Predicates is the program signature.
+%
+%	Constants is the constant signature.
+%
+%	First_order and Second_order are the lexicographic and interval
+%	inclusion order constraints imposed by a metarule.
 %
 order_tests(_,_,[],[]):-
 	!.
@@ -258,6 +477,14 @@ order_tests(_,CS,_,FTs):-
 %!	above(+Term1,+Term2,+Ordering) is det.
 %
 %	True when Term1 is above Term2 in the given Ordering.
+%
+%	Term1 and Term2 are one of the following:
+%	a) Two predicates in the program signautre
+%	b) Two constants in the constant signature
+%
+%	Ordering is the corresponding ordering list: either the program
+%	signature, or the constant signature, both of which are ordered
+%	by order_constraints/3 at the start of a learning attempt.
 %
 above(A,B,Cs):-
 % Remember- if either A or B is a variable
@@ -285,6 +512,16 @@ right_scan(A,[_|Cs],Acc):-
 %
 %	Add a new Metasubstitution to the list of Metasubstitutions.
 %
+%	Metasub is a metasubstitution in the form sub(Id, Ps), where Id
+%	is the name of a metarule and Ps a list of symbols and arities
+%	of predicates in the program signature.
+%
+%	Metasubs is the list of metasubstitutions accumulated so far by
+%	prove/7.
+%
+%	Metasubs_new is the list [Metasub|Metasubs], if Metasub is not
+%	already in Metasubs; otherwise, new_metasub/3 fails.
+%
 new_metasub(MS,Prog,[MS|Prog]):-
 	new_metasub(MS,Prog).
 
@@ -301,9 +538,23 @@ new_metasub(MS1,[MS2|Prog]):-
 	,new_metasub(MS1,Prog).
 
 
-%!	disprove(+Negative,+Program) is det.
+%!	disprove(+Atoms,+Program) is det.
 %
-%	True when a Program does not cover Negative examples.
+%	True when a Program does not cover negative examples.
+%
+%	Atoms is a list of negative examples of the learning target. It
+%	is a list of lists where each sublist is an atom in the form of
+%	a list [F|As], where F the symbol of the target predicate and As
+%	the list of the atom's terms.
+%
+%	Program is a list of definite datalog clauses, a hypothesis
+%	formed by a call to prove/6.
+%
+%	disprove/2 fails iff an atom in Atoms is entailed by Program.
+%	This is tested by first asserting Program to the dynamic
+%	database and then proving each atom in Atoms with call/1.
+%	Program is retracted from the database after the proof
+%	completes.
 %
 disprove([],_Ms):-
 % Skip further processing if there are no negative examples.
@@ -328,6 +579,12 @@ disprove(Neg,Ms):-
 %
 %	Project a list of Metasubstitutions to a Program.
 %
+%	Metasubstitutions is a list of metasubstitutions accumulated by
+%	prove/7, in the form sub(Id, Ps), where Id is the name of a
+%	metarule and Ps is a list of existentially quantified terms
+%	in the metarule. Ps may include the symbols and arities of
+%	predicates in the signature, or constants.
+%
 project_metasubs(Ms,Prog):-
 	findall(C
 		,(member(Mi,Ms)
@@ -339,6 +596,27 @@ project_metasubs(Ms,Prog):-
 %!	project_metasub(+Metasubstitution,-Clause) is det.
 %
 %	Porject a second-order Metasubstitution to a definite Clause.
+%
+%	Metasubstitution is a metasubstitution in the form sub(Id, Ps),
+%	where Id is the name of a metarule and Ps is a list of
+%	existentially quantified terms in the metarule. Ps may include
+%	the symbols and arities of predicates in the signature, or
+%	constants.
+%
+%	Clause is the projection of Metasubstitution onto the named
+%	metarule, binding the members of Ps to the existentially
+%	quantified terms in the metarule.
+%
+%	For example, suppose Metasubstitution is as follows:
+%	==
+%	sub(chain, [grandfather/2,father/2,parent/2]).
+%	==
+%
+%	Projecting this metasubstitution onto the chain metarule will
+%	produce the following clause:
+%	==
+%	grandfather(A,B):- father(A,C), parent(C,B).
+%	==
 %
 project_metasub(sub(Id,Ss),C):-
 	metarule_functor(F)
@@ -352,8 +630,9 @@ project_metasub(sub(Id,Ss),C):-
 %
 %	Business end of project_metasub/2.
 %
-%	Literals is a list of lists representing literals. Atoms is a
-%	list of atoms, derived from the literals in the list.
+%	Literals is a list of lists representing literals.
+%
+%	Atoms is a list of atoms, derived from the literals in the list.
 %
 project_metasub([],Ps,Ps_):-
 	reverse(Ps, Ps_).
@@ -364,7 +643,13 @@ project_metasub([L|Ls],Acc,Ps):-
 
 %!	literals_list_to_clause(+Literals,-Clause) is det.
 %
-%	Transforma  list of Literals to a Clause.
+%	Transforma  a list of Literals to a Clause.
+%
+%	Literals is a list of lists representing literals.
+%
+%	Clause is a definite clause, H:-B where the head literal, H, is
+%	the first literal in Literals and the body literals, B, are the
+%	remaining literals in Literals.
 %
 literals_list_to_clause([H|[]],H):-
 % No body literals

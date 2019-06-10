@@ -73,7 +73,7 @@ Grammar from three positive examples.
 
 ### Understanding the training results
 
-The hypothesis learned in the anbn experiment, above translates to the following
+The hypothesis learned in the a^nb^n experiment, above translates to the following
 BNF notation:
 
 ```bnf
@@ -205,7 +205,7 @@ clauses added to a hypothesis. In the metarule/4 clause in the `anbn.pl`
 experiment file, above, `mec(P,X,Y) :- mec(Q,X,Z), mec(R,Z,Y)` is an
 _encapsulation_ of the metarule `P(X,Y):- Q(X,Z), R(Z,Y)` in a first order term
 ("mec" stands for "metarule encapsulation"). This encapsulation is necessary to
-allow Prolog to process second-order metarules in a first-order language like
+allow second-order metarules to be processed by a first-order language like
 Prolog.
 
 In the `metarule/4` clause above, `[P,Q,R]` is the set of second order,
@@ -215,7 +215,7 @@ universally quantified variables in _unchain_.
 The existentially quantified variables in a metarule range over the set of
 predicate symbols including a) the predicate symbol of the target predicate, b)
 each of the predicate symbols of predicates in the background knowledge and c)
-any symbols invented during learning. In the anbn experiment, the predicate
+any symbols invented during learning. In the a^nb^n experiment, the predicate
 symbol of the target predicate is `'S'`, the predicate symbols of the background
 knowledge are `'A'` and `'B'` and `'S_1'` is the predicate symbol of an invented
 predicate.
@@ -297,7 +297,7 @@ Above, the two lists, `Ps` and `Cs` represent the lexicographic and interval
 orders, respectively. In this representation, a term `p` is above another term
 `q` in their respective order, iff `p` is before `q` in an ordering list.
 
-The symbol of the target predicate is always added to the start of the list of
+The symbol of the target predicate is always added to the start of the
 lexicographic order list (this is done after `order_constraints/2` is called, so
 you cannot see it in the query above). Additionally, any predicates during
 learning are added to the lexicographic order list right after the target
@@ -328,7 +328,7 @@ target predicate 'S'/2. 'S'/2 is the start symbol of the grammar. 'A'/2 and
 'B'/2, the terminals in the a^nb^n language, are given as background knowledge
 in the experiment file.
 
-Conceptually, the function of the background knowledge is to constraint the
+Conceptually, the function of the background knowledge is to constrain the
 search to hypotheses that satisfy the cirterion that the background knowledge
 definitions and the hypothesis must entail all positive examples, and none of
 the negative examples.
@@ -347,11 +347,11 @@ background knowledge, 'A'/2 and 'B'/2.
 
 #### The need for inductive bias in machine learning
 
-Clearly, background knowledge, metarules and order constraints impose a strong
-bias on the hypotheses that can be learned. The need for inductive bias in
-machine learning merits a longer discussion that is well beyond the scope of
-this introduction to Thelma. Suffice it to say that, without bias, there can be
-no learning. For a discussion, see [Mitchell, 1997]. There are no machine
+Background knowledge, metarules and order constraints impose a strong bias on
+the hypotheses that can be learned. The need for inductive bias in machine
+learning merits a longer discussion that is well beyond the scope of this
+introduction to Thelma. Suffice it to say that, without bias, there can be no
+learning. For a discussion, see [(Mitchell, 1997)]. There are no machine
 learning algorithms that do not encode bias in some form- neural network
 architectures, Support Vector Machines' kernels, distance functions, Bayesian
 priors- are all instances of such bias encoding. The advantage of MIL and ILP
