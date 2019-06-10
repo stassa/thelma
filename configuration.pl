@@ -47,9 +47,9 @@ depth_limits(2,1).
 experiment_file('data/examples/tiny_kinship.pl',tiny_kinship).
 %experiment_file('data/examples/anbn.pl',anbn).
 %experiment_file('data/examples/even.pl',even).
+%experiment_file('data/examples/membership.pl',membership).
 %experiment_file('data/examples/constants.pl',constants).
 %experiment_file('data/examples/constants_2.pl',constants_2).
-
 
 %!	metarule(?Name,?Second_order,?First_order,?Literals) is semidet.
 %
