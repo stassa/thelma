@@ -38,7 +38,7 @@ depth_limits(2,0).
 relation that uses an accumulator:
 
 ==
-?- learn(member_acc/2, _Ps), print_clauses(_Ps).
+?- learn(member_acc/2).
 % Clauses: 1; Invented: 0
 % Clauses: 2; Invented: 0
 member_acc(A,[A|B]).
@@ -50,7 +50,7 @@ true .
 relation that uses head/2 and tail/2.
 
 ==
-?- learn(member_nacc/2, _Ps), print_clauses(_Ps).
+?- learn(member_nacc/2).
 % Clauses: 1; Invented: 0
 % Clauses: 2; Invented: 0
 member_nacc(A,B):-head(B,A).

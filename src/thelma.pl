@@ -1,4 +1,5 @@
-:-module(thelma, [learn/2
+:-module(thelma, [learn/1
+		 ,learn/2
 		 ,learn/5
 		 ]).
 
@@ -7,6 +8,23 @@
 
 /** <module> A Meta-Interpretive Learning system.
 */
+
+%!	learn(+Target) is nondet.
+%
+%	Learn a Definition of a Target predicate.
+%
+%	As learn/2 but prints each learned program to the Prolog
+%	top-level rather than binding it to an output variable.
+%
+%	Use this predicate when you don't need to process a learned
+%	program any further, i.e. by passing it to another predicate,
+%	and so on.
+%
+learn(T):-
+	learn(T,Ps)
+	,print_clauses(Ps).
+
+
 
 %!	learn(+Target,-Definition) is nondet.
 %

@@ -32,10 +32,11 @@ experiment_file('data/examples/even.pl',even).
 depth_limits(3,1).
 ==
 
-3. Run the following query to train Thelma on the data in this file:
+3. Run the following query to train Thelma on the data in this file and
+print the results to the top-level:
 
 ==
-?- learn(even/1,_Prog),print_clauses(_Prog).
+?- learn(even/1).
 % Clauses: 1; Invented: 0
 % Clauses: 2; Invented: 0
 % Clauses: 2; Invented: 1

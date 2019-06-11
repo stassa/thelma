@@ -15,7 +15,7 @@ Example of use
 
 Thelma runs on Swi-Prolog version 8.0.0 or later.
 
-See the `data/` directory for examples.
+See the `data/examples/` directory for examples.
 
 Follow the steps below to run an example that learns the a^nb^n Context Free
 Grammar from three positive examples.
@@ -59,7 +59,7 @@ Grammar from three positive examples.
    the results to the console.
    
    ```prolog
-   ?- learn('S'/2,_Prog),print_clauses(_Prog).
+   ?- learn('S'/2).
    % Clauses: 1; Invented: 0
    % Clauses: 2; Invented: 0
    % Clauses: 2; Invented: 1
@@ -74,7 +74,15 @@ Grammar from three positive examples.
 ### Understanding the training results
 
 The hypothesis learned in the a^nb^n experiment, above translates to the following
-BNF notation:
+context-free grammar, in Definite Clause Grammars notation:
+
+```
+'S' --> 'A', 'B'.
+'S' --> 'S_1', 'B'.
+'S_1' --> 'A', 'S'.
+```
+
+Or, in BNF notation:
 
 ```bnf
 <S> ::= <A> <B>

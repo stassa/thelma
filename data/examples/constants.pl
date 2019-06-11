@@ -25,12 +25,17 @@ experiment_file('data/examples/constants.pl',constants).
 depth_limits(3,0).
 ==
 
-3. Run the following query to train Thelma on the data in this file:
+3. Run the following query to train Thelma on the data in this file and
+print the results to the top-level:
 
 ==
-?- learn(c_1/2,_Prog),print_clauses(_Prog).
+?- learn(c_5/2).
 % Clauses: 1; Invented: 0
-c_1(1,1).
+% Clauses: 2; Invented: 0
+% Clauses: 3; Invented: 0
+c_5(1,A).
+c_5(A,2).
+c_5(4,A).
 true .
 ==
 

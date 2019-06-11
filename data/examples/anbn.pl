@@ -27,10 +27,11 @@ experiment_file('data/examples/anbn.pl',anbn).
 depth_limits(3,1).
 ==
 
-3. Run the following query to train Thelma on the data in this file:
+3. Run the following query to train Thelma on the data in this file and
+print the results to the top-level:
 
 ==
-?- learn('S'/2,_Prog),print_clauses(_Prog).
+?- learn('S'/2).
 % Clauses: 1; Invented: 0
 % Clauses: 2; Invented: 0
 % Clauses: 2; Invented: 1
