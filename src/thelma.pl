@@ -283,7 +283,9 @@ prove(K,Pos,BK,MS,Os,Ss):-
 prove(_K,[],_BK,_MS,_PS,Ss,Ss):-
 	!.
 prove(K,[A|As],BK,MS,Os,Acc,Bind):-
-	prove_atom(A,BK)
+	background_predicate(BK,A)
+	,!
+	,prove_atom(A)
 	,prove(K,As,BK,MS,Os,Acc,Bind).
 prove(K,[A|As],BK,MS,Os,Acc1,Bind):-
 	select_metasub(Acc1,MS,A,Os,Bs)
@@ -298,23 +300,17 @@ prove(K,[A|As],BK,MS,Os,Acc1,Bind):-
 	,prove(K,As,BK,MS,Os,Acc3,Bind).
 
 
-%!	prove_atom(+Atom,+Background) is det.
+%!	prove_atom(+Atom) is det.
 %
 %	Prove an Atom of a predicate in the Background knowledge.
 %
 %	Atom is an atom represented as a list, [F|As], where F the
 %	symbol of the atom's predicate and As the atom's list of terms.
 %
-%	Background is a list of symbols and arities of predicates given
-%	as background knowledge.
+%	Atom is proved by calling it with call/1.
 %
-%	If Atom is an atom of a predicate in the Background knowledge,
-%	it is proved by calling call/1.
-%
-prove_atom(A,BK):-
-	background_predicate(BK,A)
-	,!
-	,A_ =.. A
+prove_atom(A):-
+	A_ =.. A
 	,user:call(A_).
 
 
