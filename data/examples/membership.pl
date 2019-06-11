@@ -112,7 +112,7 @@ configuration:metarule(rec_tail, [P,Q], [X,Y,Z], (mec(P,X,Y):-mec(Q,Y,Z),mec(P,X
 
 configuration:order_constraints(head,_Ss,_Fs,[],[]).
 configuration:order_constraints(tail,_Ss,_Fs,[],[]).
-configuration:order_constraints(rec_tail,[P,Q],[X,Y,Z],[P>Q],[X>Y,Y>Z]).
+configuration:order_constraints(rec_tail,[P,Q],_Fs,[P>Q],[]).
 
 
 %!	background_knowledge(?Target, ?Background) is semidet.

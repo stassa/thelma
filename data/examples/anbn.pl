@@ -91,7 +91,7 @@ false.
 
 % Chain with one less second-order constraint.
 configuration:metarule(unchain, [P,Q,R], [X,Y,Z], (mec(P,X,Y) :- mec(Q,X,Z), mec(R,Z,Y))).
-configuration:order_constraints(unchain,[P,Q,_R],[X,Y,Z],[P>Q],[X>Z,Z>Y]).
+configuration:order_constraints(unchain,[P,Q,_R],_Fs,[P>Q],[]).
 
 background_knowledge('S'/2,['A'/2,'B'/2]).
 
