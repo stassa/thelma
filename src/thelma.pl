@@ -286,8 +286,7 @@ prove(K,[A|As],BK,MS,Os,Acc,Bind):-
 	prove_atom(A,BK)
 	,prove(K,As,BK,MS,Os,Acc,Bind).
 prove(K,[A|As],BK,MS,Os,Acc1,Bind):-
-	member(Msub,Acc1)
-	,once(metasubstitution(MS,A,Os,Msub,Bs))
+	next_metasub(Acc1,MS,A,Os,Bs)
 	,prove(K,Bs,BK,MS,Os,Acc1,Acc2)
 	,! % Very red cut. Avoids adding (many!)
 	% redundant clauses- but will it cut
@@ -335,6 +334,33 @@ prove_atom(A,BK):-
 background_predicate(BK,[F|Args]):-
 	length(Args, A)
 	,memberchk(F/A, BK).
+
+
+%!	next_metasub(+Metasubs,+Metarules,+Atom,+Orders,-Body) is
+%!	nondet.
+%
+%	Get the next known metasubstitution.
+%
+%	Metasubs is a list of metasubstitutions, the accumulator built
+%	by prove/7 during learning.
+%
+%	Metarules is a list of constants, the names of metarules for the
+%	learning target.
+%
+%	Atom is the atom currently being proved.
+%
+%	Orders is the association Ps-Cs of the predicate signature and
+%	the constant signature, ordered by lexicographic and interval
+%	orders.
+%
+%	Body is the list of body literals in a metasubstitution in
+%	Metasubs. It is a list of lists, where each sub-list is of the
+%	form [F|As], representing an atom of a predicate with symbol F
+%	and where As are the terms of the atom.
+%
+next_metasub(Msubs,MS,A,Os,Bs):-
+	member(Msub,Msubs)
+	,once(metasubstitution(MS,A,Os,Msub,Bs)).
 
 
 %!	metasubstitution(+Metarules,+Atom,+Signature,?Metasub,-Body) is
