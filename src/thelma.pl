@@ -286,17 +286,14 @@ prove(K,[A|As],BK,MS,Os,Acc,Bind):-
 	prove_atom(A,BK)
 	,prove(K,As,BK,MS,Os,Acc,Bind).
 prove(K,[A|As],BK,MS,Os,Acc1,Bind):-
-	next_metasub(Acc1,MS,A,Os,Bs)
+	select_metasub(Acc1,MS,A,Os,Bs)
 	,prove(K,Bs,BK,MS,Os,Acc1,Acc2)
 	,! % Very red cut. Avoids adding (many!)
 	% redundant clauses- but will it cut
 	% out necessary ones, also?
 	,prove(K,As,BK,MS,Os,Acc2,Bind).
 prove(K,[A|As],BK,MS,Os,Acc1,Bind):-
-	length(Acc1,N)
-	,N < K
-	,metasubstitution(MS,A,Os,Msub,Bs)
-	,new_metasub(Msub,Acc1,Acc2)
+	new_metasub(K,Acc1,A,MS,Os,Acc2,Bs)
 	,prove(K,Bs,BK,MS,Os,Acc2,Acc3)
 	,prove(K,As,BK,MS,Os,Acc3,Bind).
 
@@ -336,7 +333,7 @@ background_predicate(BK,[F|Args]):-
 	,memberchk(F/A, BK).
 
 
-%!	next_metasub(+Metasubs,+Metarules,+Atom,+Orders,-Body) is
+%!	select_metasub(+Metasubs,+Metarules,+Atom,+Orders,-Body) is
 %!	nondet.
 %
 %	Get the next known metasubstitution.
@@ -358,9 +355,49 @@ background_predicate(BK,[F|Args]):-
 %	form [F|As], representing an atom of a predicate with symbol F
 %	and where As are the terms of the atom.
 %
-next_metasub(Msubs,MS,A,Os,Bs):-
+select_metasub(Msubs,MS,A,Os,Bs):-
 	member(Msub,Msubs)
 	,once(metasubstitution(MS,A,Os,Msub,Bs)).
+
+
+%!	new_metasub(+Depth,+Metasubs,+Atom,+Metarules,+Orders,-New,-Body)
+%!	is nondet.
+%
+%	Create a new metasubstitution.
+%
+%	Depth is an integer, the maximum depth for the iterative
+%	deepening search in prove/7.
+%
+%	Metasubs is a list of metasubstitutions, the accumulator built
+%	by prove/7 during learning.
+%
+%	Atom is the atom currently being proved.
+%
+%	Metarules is a list of constants, the names of metarules for the
+%	learning target.
+%
+%	Orders is the association Ps-Cs of the predicate signature and
+%	the constant signature, ordered by lexicographic and interval
+%	orders.
+%
+%	New is the accumulator of metasubstitutions extended by the
+%	addition of a new metasubstitution, created by this predicate.
+%
+%	Body is the list of body literals in the new metasubstitution.
+%	It is a list of lists, where each sub-list is of the form
+%	[F|As], representing an atom of a predicate with symbol F and
+%	where As are the terms of the atom.
+%
+%	new_metasub/7 fails if the length of Metasubs is equal to (or
+%	larger than) Depth, which is when the learned hypothesis (i.e.
+%	the accumulator of metasubstitutions) has reached the maximum
+%	hypothesis size for the current search iteration.
+%
+new_metasub(K,Msubs,A,MS,Os,Msubs_,Bs):-
+	length(Msubs,N)
+	,N < K
+	,metasubstitution(MS,A,Os,Msub,Bs)
+	,save_metasub(Msub,Msubs,Msubs_).
 
 
 %!	metasubstitution(+Metarules,+Atom,+Signature,?Metasub,-Body) is
@@ -568,7 +605,7 @@ right_scan(A,[_|Cs],Acc):-
 	right_scan(A,Cs,Acc).
 
 
-%!	new_metasub(+Metasub,+Metasubs,-Metasubs_new) is det.
+%!	save_metasub(+Metasub,+Metasubs,-Metasubs_new) is det.
 %
 %	Add a new Metasubstitution to the list of Metasubstitutions.
 %
@@ -580,22 +617,22 @@ right_scan(A,[_|Cs],Acc):-
 %	prove/7.
 %
 %	Metasubs_new is the list [Metasub|Metasubs], if Metasub is not
-%	already in Metasubs; otherwise, new_metasub/3 fails.
+%	already in Metasubs; otherwise, save_metasub/3 fails.
 %
-new_metasub(MS,Prog,[MS|Prog]):-
-	new_metasub(MS,Prog).
+save_metasub(MS,Prog,[MS|Prog]):-
+	save_metasub(MS,Prog).
 
-%!	new_metasub(+Metasub,+Metasubs) is det.
+%!	save_metasub(+Metasub,+Metasubs) is det.
 %
-%	Business end of new_metasub/3.
+%	Business end of save_metasub/3.
 %
 %	True when Metaub is not in Metasubs.
 %
-new_metasub(_,[]):-
+save_metasub(_,[]):-
 	!.
-new_metasub(MS1,[MS2|Prog]):-
+save_metasub(MS1,[MS2|Prog]):-
 	MS1 \== MS2
-	,new_metasub(MS1,Prog).
+	,save_metasub(MS1,Prog).
 
 
 %!	disprove(+Atoms,+Program) is det.
