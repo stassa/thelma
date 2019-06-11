@@ -291,11 +291,10 @@ prove(K,[A|As],BK,MS,Os,Acc,Bind):-
 prove(K,[A|As],BK,MS,Os,Acc1,Bind):-
 	member(Msub,Acc1)
 	,once(metasubstitution(MS,A,Os,Msub,Bs))
-	% move cut here?
 	,prove(K,Bs,BK,MS,Os,Acc1,Acc2)
-	,! % Very red cut. Stops adding some
-	% redundant clauses- but will it stop
-	% adding necessary ones, also?
+	,! % Very red cut. Avoids adding (many!)
+	% redundant clauses- but will it cut
+	% out necessary ones, also?
 	,prove(K,As,BK,MS,Os,Acc2,Bind).
 prove(K,[A|As],BK,MS,Os,Acc1,Bind):-
 	length(Acc1,N)

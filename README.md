@@ -73,8 +73,8 @@ Grammar from three positive examples.
 
 ### Understanding the training results
 
-The hypothesis learned in the a^nb^n experiment, above translates to the following
-context-free grammar, in Definite Clause Grammars notation:
+The hypothesis learned in the a^nb^n experiment, above translates to the
+following context-free grammar, in [Definite Clause Grammars] notation (DCG):
 
 ```
 'S' --> 'A', 'B'.
@@ -100,8 +100,7 @@ during learning. Note also that `'S_1'/2` is mutually recursive with `'S'/2`.
 
 The grammar learned by Thelma is a Prolog program and so it can be run both as a
 recogniser and a generator. See [Context Free Grammars] for an explanation of
-how a Definite Claus Grammar definition of a^nb^n like the one learned by Thelma
-works.
+how a [DCG] definition of a^nb^n like the one learned by Thelma works.
 
 #### Run as a generator
 
@@ -413,3 +412,5 @@ Bibliography and references
 [(Knuth and Bendix, 1970)]: https://link.springer.com/chapter/10.1007/978-3-642-81955-1_23
 [(Zhang et al. 2005)]: https://link.springer.com/chapter/10.1007/11532231_10
 [(Mitchell, 1997)]: https://www.cs.cmu.edu/afs/cs.cmu.edu/user/mitchell/ftp/mlbook.html
+[Definite Clause Grammars]:https://en.wikipedia.org/wiki/Definite_clause_grammar
+[DCG]:https://en.wikipedia.org/wiki/Definite_clause_grammar
