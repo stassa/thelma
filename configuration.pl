@@ -50,6 +50,7 @@ experiment_file('data/examples/tiny_kinship.pl',tiny_kinship).
 %experiment_file('data/examples/membership.pl',membership).
 %experiment_file('data/examples/constants.pl',constants).
 %experiment_file('data/examples/constants_2.pl',constants_2).
+%experiment_file('data/examples/builtins.pl',builtins).
 
 %!	metarule(?Name,?Second_order,?First_order,?Literals) is semidet.
 %
