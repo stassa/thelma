@@ -14,12 +14,11 @@ user:file_search_path(output, project_root(output)).
 
 edit_files:-
 	configuration:experiment_file(P,_)
-	,edit(project_root(load_project))
+	,edit(project_root(load))
 	,edit(project_root(configuration))
 	,edit(src(auxiliaries))
 	,edit(src(thelma))
-	,edit(P)
-	.
+	,edit(P).
 :-edit_files.
 
 %:-load_test_files([]).
