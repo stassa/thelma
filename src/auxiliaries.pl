@@ -19,6 +19,7 @@
 :-user:use_module(lib(mathemancy/mathemancy)).
 :-user:use_module(lib(program_reduction/program_reduction)).
 :-user:use_module(lib(sampling/sampling)).
+:-user:use_module(lib/tp/tp).
 
 /** <module> Helper predicates for Thelma.
 
