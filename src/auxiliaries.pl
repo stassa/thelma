@@ -524,7 +524,7 @@ print_clauses(Cs):-
 %	Collect all clauses of a Program.
 %
 %	Symbols is the list of predicate indicators, F/A, of clauses in
-%	Program.
+%	Program, or a single predicate indicator, F/A.
 %
 %	Module is the definition module for Progam. This can be set to
 %	user if the Program is not defined in a module.
@@ -536,6 +536,9 @@ print_clauses(Cs):-
 %	duplicates- if the same Symbol is passed in more than once, the
 %	same definition will be included that many times in Programs.
 %
+program(F/A,M,Ps):-
+	!
+	,program([F/A],M,Ps).
 program(Ss,M,Ps):-
 	findall(P
 	       ,(member(F/A,Ss)
