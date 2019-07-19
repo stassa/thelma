@@ -11,6 +11,7 @@ user:file_search_path(output, project_root(output)).
 :-use_module(configuration).
 :-use_module(src(auxiliaries)).
 :-use_module(src(thelma)).
+:-use_module(lib(evaluation/evaluation)).
 
 edit_files:-
 	configuration:experiment_file(P,_)
@@ -18,7 +19,8 @@ edit_files:-
 	,edit(project_root(configuration))
 	,edit(src(auxiliaries))
 	,edit(src(thelma))
-	,edit(P).
+	,edit(P)
+	.
 :-edit_files.
 
 %:-load_test_files([]).
