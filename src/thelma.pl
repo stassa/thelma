@@ -100,12 +100,14 @@ convert_examples(Es,Es_):-
 learn(Pos,Neg,BK,MS,Prog):-
 	configuration:depth_limits(C,I)
 	,initialise_experiment
-	,target_predicate(Pos,T)
+	,convert_examples(Pos,Pos_c)
+	,convert_examples(Neg,Neg_c)
+	,target_predicate(Pos_c,T)
 	,depth_level(C,I,C_,I_)
 	,program_signature(I_,T,BK,Po,Co)
 	,debug(depth,'Clauses: ~w; Invented: ~w',[C_,I_])
-	,prove(C_,Pos,BK,MS,Po-Co,Ps)
-	,disprove(Neg,Ps)
+	,prove(C_,Pos_c,BK,MS,Po-Co,Ps)
+	,disprove(Neg_c,Ps)
 	,project_metasubs(Ps, Prog).
 learn(_Pos,_Neg,_BK,_MS,_Prog):-
 	cleanup_experiment
