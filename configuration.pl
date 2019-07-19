@@ -9,6 +9,7 @@
 :-user:use_module(src(experiment_file)).
 :-reexport(lib(sampling/sampling_configuration)).
 :-reexport(lib(program_reduction/reduction_configuration)).
+:-reexport(lib(evaluation/evaluation_configuration)).
 
 /** <module> Configuration options for Thelma.
 
