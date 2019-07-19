@@ -30,9 +30,7 @@
 %	convert_examples/4 version according to its own internal
 %	representation of examples.
 %
-convert_examples(Pos,Neg,Pos_,Neg_):-
-	findall(E_,(member(E,Neg),E_ =.. E),Neg_)
-	,findall(E_,(member(E,Pos),E_ =.. E),Pos_).
+convert_examples(Pos,Neg,Pos,Neg).
 
 
 %!	list_results(+Target,+Program,+Results) is det.

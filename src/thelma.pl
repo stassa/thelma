@@ -48,7 +48,21 @@ learn(T):-
 %
 learn(T,Prog):-
 	experiment_data(T,Pos,Neg,BK,MS)
-	,learn(Pos,Neg,BK,MS,Prog).
+	,convert_examples(Pos,Pos_c)
+	,convert_examples(Neg,Neg_c)
+	,learn(Pos_c,Neg_c,BK,MS,Prog).
+
+
+%!	convert_examples(+Examples,-Converted) is det.
+%
+%	Convert Examples to internal represenation.
+%
+convert_examples(Es,Es_):-
+	findall(E_
+	       ,(member(E,Es)
+		,E =.. E_
+		)
+	       ,Es_).
 
 
 
