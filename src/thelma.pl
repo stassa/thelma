@@ -48,21 +48,7 @@ learn(T):-
 %
 learn(T,Prog):-
 	experiment_data(T,Pos,Neg,BK,MS)
-	,convert_examples(Pos,Pos_c)
-	,convert_examples(Neg,Neg_c)
-	,learn(Pos_c,Neg_c,BK,MS,Prog).
-
-
-%!	convert_examples(+Examples,-Converted) is det.
-%
-%	Convert Examples to internal represenation.
-%
-convert_examples(Es,Es_):-
-	findall(E_
-	       ,(member(E,Es)
-		,E =.. E_
-		)
-	       ,Es_).
+	,learn(Pos,Neg,BK,MS,Prog).
 
 
 
@@ -112,6 +98,18 @@ learn(Pos,Neg,BK,MS,Prog):-
 learn(_Pos,_Neg,_BK,_MS,_Prog):-
 	cleanup_experiment
 	,fail.
+
+
+%!	convert_examples(+Examples,-Converted) is det.
+%
+%	Convert Examples to internal represenation.
+%
+convert_examples(Es,Es_):-
+	findall(E_
+	       ,(member(E,Es)
+		,E =.. E_
+		)
+	       ,Es_).
 
 
 %!	depth_level(+Clause_Max,+Invented_Max,-Clauses,-Invented) is
