@@ -7,6 +7,7 @@
 		      ,initialise_experiment/0
 		      ,cleanup_experiment/0
 		      ,print_clauses/1
+		      ,debug_clauses/2
 		      ,program/3
 		      ]).
 
@@ -510,6 +511,28 @@ print_clauses(Cs):-
 			       ,numbervars(true)
 			       ,quoted(true)
 			       ])
+	       )
+	      ).
+
+
+
+%!	debug_clauses(+Topic,+Clauses) is det.
+%
+%	Debug a list of Clauses if Topic is being debugged.
+%
+debug_clauses(T,L):-
+	\+ is_list(L)
+	,!
+	,debug_clauses(T,[L]).
+debug_clauses(T,Cs):-
+	forall(member(C,Cs)
+	      ,(copy_term(C,C_)
+	       ,numbervars(C_)
+	       ,format(atom(A),'~W',[C_, [fullstop(true)
+					 ,numbervars(true)
+					 ,quoted(true)]
+				    ])
+	       ,debug(T,'~w',A)
 	       )
 	      ).
 
