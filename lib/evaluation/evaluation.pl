@@ -1,4 +1,5 @@
 :-module(evaluation, [list_results/3
+		     ,list_results/6
 		     ,print_evaluation/2
 		     ,print_confusion_matrix/2
 		     ,print_metrics/2
@@ -11,7 +12,11 @@
 
 :-use_module(configuration).
 :-use_module(src(auxiliaries)).
-:-use_module(lib(tp/tp)).
+:-learner(L)
+  ,(   L = thelma
+   ->  use_module(lib(tp/tp))
+   ;   true
+   ).
 
 /** <module> Evaluation metrics for experiment results.
 */
@@ -19,18 +24,35 @@
 %!	convert_examples(+Pos,+Neg,-Converted_Pos,-Converted_Neg) is
 %!	det.
 %
-%	Convert examples to their original representation.
+%	Convert examples from a learner's internal representation.
 %
-%	Examples are reprsented in Thelma as lists [P,A1,...,An] of the
-%	predicate symbol and arguments of a unit clause. The predicates
-%	in this module expect examples to be unit clauses. This
-%	predicate handles the transformation for Thelma.
+%	This predicate handles the necessary transformations from the
+%	internal representation used in the two MIL learners, Thelma and
+%	Louise, to unit clauses.
 %
-%	@tbd This library is shared with Louise, that declares its own
-%	convert_examples/4 version according to its own internal
-%	representation of examples.
+%	Examples are represented internally in Louise as definite
+%	clauses: unit clauses for positive examples, and goals, :-A, for
+%	negative examples. In Thelma both positive and negative examples
+%	are represented as lists [P,A1,...,An] of the predicate symbol
+%	and arguments of a unit clause. The predicates in this module
+%	expect both positive and negative examples to be given as unit
+%	clauses (with no negative literals) so some transformation is
+%	required.
 %
-convert_examples(Pos,Neg,Pos,Neg).
+%	@tbd This library is shared between Thelma and Louise, hence the
+%	use of learner/1 to identify the learning system and select the
+%	clause that performs the appropriate transformation.
+%
+%	@tbd It turns out the transformation is only necessary for
+%	Louise, currently.
+%
+convert_examples(Pos,Neg,Pos,Neg_):-
+	configuration:learner(louise)
+	,!
+	,G = findall(E,member(:-E,Neg),Neg_)
+	,call(G).
+convert_examples(Pos,Neg,Pos,Neg):-
+	configuration:learner(thelma).
 
 
 %!	list_results(+Target,+Program,+Results) is det.
@@ -48,7 +70,14 @@ convert_examples(Pos,Neg,Pos,Neg).
 %
 list_results(T,Ps,Rs):-
 	experiment_data(T,Pos,Neg,BK,_MS)
-	,convert_examples(Pos,Neg,Pos_c,Neg_c)
+	,list_results(T,Ps,Pos,Neg,BK,Rs).
+
+%!	list_results(+Target,+Program,+Pos,+Neg,+BK,+Results) is det.
+%
+%	Business end of list_results/3.
+%
+list_results(T,Ps,Pos,Neg,BK,Rs):-
+	convert_examples(Pos,Neg,Pos_c,Neg_c)
 	,ground_background(T,BK,BK_)
 	,lfp_query(Ps,BK_,_Is,As)
 	,maplist(sort,[As,Pos_c,Neg_c],[As_,Pos_,Neg_])

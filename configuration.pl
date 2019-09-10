@@ -1,6 +1,7 @@
 :-module(configuration, [default_ordering/1
 			,depth_limits/2
 			,experiment_file/2
+			,learner/1
 			,metarule/4
 			,metarule_functor/1
 			,order_constraints/5
@@ -53,6 +54,21 @@ experiment_file('data/examples/tiny_kinship.pl',tiny_kinship).
 %experiment_file('data/examples/constants_2.pl',constants_2).
 %experiment_file('data/examples/builtins.pl',builtins).
 %experiment_file('data/examples/recipes.pl',recipes).
+
+
+%!	learner(?Name) is semidet.
+%
+%	Name of the learning system this configuration is for.
+%
+%	Name is one of [louise,thelma].
+%
+%	Used to switch context between Louise and Thelma, where this is
+%	needed. The typical use case is when experiment code must check
+%	the values of configuration options that are particular to one
+%	or the other system (e.g. depth_limits/2 is not present in
+%	Louise etc).
+%
+learner(thelma).
 
 
 %!	metarule(?Name,?Second_order,?First_order,?Literals) is semidet.
