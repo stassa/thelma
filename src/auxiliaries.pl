@@ -22,6 +22,7 @@
 :-user:use_module(lib(program_reduction/program_reduction)).
 :-user:use_module(lib(sampling/sampling)).
 :-user:use_module(lib/tp/tp).
+:-user:use_module(src(louise_compatibility)).
 
 /** <module> Helper predicates for Thelma.
 
