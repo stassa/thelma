@@ -15,13 +15,17 @@
 		     ]).
 
 :-use_module(configuration).
-:-use_module(lib(sampling/sampling)).
 :-use_module(src(auxiliaries)).
-:-learner(L)
-  ,(   L = thelma
-   ->  use_module(lib(tp/tp))
-   ;   true
-   ).
+
+:-if(learner(louise)).
+:-use_module(src(louise)).
+:-elif(learner(thelma)).
+:-use_module(src(thelma)).
+:-endif.
+
+:-use_module(lib(sampling/sampling)).
+:-use_module(lib(tp/tp)).
+
 
 /** <module> Evaluation metrics for experiment results.
 */
@@ -78,10 +82,7 @@ train_and_test(T,S,Ps,M,V):-
 train_and_test(T,S,[Pos,Neg,BK,MS],Ps,M,V):-
 	train_test_splits(S,Pos,Pos_Train,Pos_Test)
 	,train_test_splits(S,Neg,Neg_Train,Neg_Test)
-	,(   learn(Pos_Train,Neg_Train,BK,MS,Ps)
-	 ->  true
-	 ;   Ps = []
-	 )
+	,learn(Pos_Train,Neg_Train,BK,MS,Ps)
 	,program_results(T,Ps,BK,Rs)
 	,evaluation(Rs,Pos_Test,Neg_Test,_Ts,_Bs,Cs)
 	,once(metric(M,Cs,V)).
@@ -118,12 +119,11 @@ timed_train_and_test(T,S,L,Ps,M,V):-
 timed_train_and_test(T,S,L,[Pos,Neg,BK,MS],Ps,M,V):-
 	train_test_splits(S,Pos,Pos_Train,Pos_Test)
 	,train_test_splits(S,Neg,Neg_Train,Neg_Test)
-	,G = (   learn(Pos_Train,Neg_Train,BK,MS,Ps)
-	     ->  true
-	     ;   Ps = []
-	     )
+	,G = learn(Pos_Train,Neg_Train,BK,MS,Ps)
 	,C = call_with_time_limit(L,G)
-	,catch(C,time_limit_exceeded,(Ps=[]))
+	,catch(C,time_limit_exceeded,(Ps=[]
+				     ,cleanup_experiment)
+	      )
 	,program_results(T,Ps,BK,Rs)
 	,evaluation(Rs,Pos_Test,Neg_Test,_Ts,_Bs,Cs)
 	,once(metric(M,Cs,V)).
@@ -318,9 +318,31 @@ list_results(T,Ps,Pos,Neg,BK,Rs):-
 %	are immediate consequences of the Program with respect to the
 %	background knowledge, BK.
 %
+program_results(_T,[],_BK,[]):-
+	!.
 program_results(T,Ps,BK,Rs):-
-	ground_background(T,BK,BK_)
+	configuration:success_set_generation(tp)
+	,!
+	,ground_background(T,BK,BK_)
 	,lfp_query(Ps,BK_,_Is,Rs).
+program_results(F/A,Ps,_BK,Rs):-
+	configuration:success_set_generation(sld)
+	,S = (table(user:F/A)
+	     ,assert_program(user,Ps,Refs_Ps)
+	     )
+	,G = (findall(H
+		     ,(functor(H,F,A)
+		      ,call(user:H)
+		      ,numbervars(H)
+		      )
+		     ,Rs_)
+	     ,sort(Rs_, Rs_S)
+	     ,varnumbers(Rs_S, Rs)
+	     )
+	,C = (erase_program_clauses(Refs_Ps)
+	     ,untable(user:F/A)
+	     )
+	,setup_call_cleanup(S,G,C).
 
 
 %!	ground_background(+Target,+BK,-Ground) is det.
@@ -328,7 +350,7 @@ program_results(T,Ps,BK,Rs):-
 %	Collect ground BK atoms.
 %
 %	Also remove from the BK atoms of the learning Target. That's to
-%	allow lfp/e to succeed if the learning Target is also a
+%	allow lfp/2 to succeed if the learning Target is also a
 %	predicate in the BK (more precisely, if it is a determinant of
 %	another BK predicate).
 %
@@ -341,7 +363,6 @@ ground_background(F/A,BK,BK_):-
 		 ,\+ functor(At,F,A)
 		 )
 		,BK_).
-
 
 
 %!	clause_count(+Hypothesis,-Size,-Definite,-Unit) is det.
@@ -505,6 +526,7 @@ print_metrics(T,Ps,Pos,Neg,BK):-
 %
 evaluation(Rs,Pos,Neg
 	  ,[P,N],[PP_,NN_,NP_,PN_],[ACC,ERR,FPR,FNR,TPR,TNR,PRE,FSC]):-
+	%maplist(print_clauses,['Results','Examples'],[Rs,Pos]),
 	convert_examples(Pos,Neg,Pos_c,Neg_c)
 	,maplist(sort,[Rs,Pos_c,Neg_c],[Rs_,Pos_,Neg_])
 	,maplist(length,[Pos_,Neg_],[P,N])
@@ -527,6 +549,8 @@ evaluation(Rs,Pos,Neg
 %
 %	Calculate the Accuracy of a result.
 %
+acc(_PP,_NN,[],[],_ACC):-
+	throw('acc/5: Empty testing partition. Cannot evaluate hypothesis.').
 acc(PP,NN,Pos,Neg,ACC):-
 	total(PP,NN,Ps)
 	,total(Pos,Neg,As)
@@ -594,7 +618,27 @@ fsc(PRE,REC,FSC):-
 %	examples and the set of positive predicted Results.
 %
 false_positives(Rs,Neg,NP):-
-	ord_intersection(Rs,Neg,NP).
+% ord_intersection/3 uses the standard order of terms in which variables
+% are ordered by age. This causes comparisons between two non-ground
+% terms to fail even if they are alphabetic variants of each other (i.e.
+% identical up to renaming of variables). This is not what we want. It
+% turns out the library(list) version of intersection is less strict
+% about ordering and will compare non-ground terms more or less
+% correctly. "More or less" because there's some strange behaviour I
+% don't understand that seems to be the result of variables in
+% non-ground terms being bound during intersection/3 execution. The best
+% solution seems to be to write a new intersection predicate to do what
+% is needed, but this will take some time. In the meantime, ground/1 is
+% used to select clauses in this predicate and also false_negatives/3,
+% true_positives/3 and true_negatives/3. Note that the two of those call
+% (ord)subtract/3 instead of (ord)intersection/3 but that predicate also
+% has the same ordering er, not quite problem really, it's just not what
+% we want here.
+	ground(Rs)
+	,!
+	,ord_intersection(Rs,Neg,NP).
+false_positives(Rs,Neg,NP):-
+	intersection(Rs,Neg,NP).
 
 
 %!	false_negaives(+Results,+Positive,-PN) is det.
@@ -606,7 +650,11 @@ false_positives(Rs,Neg,NP):-
 %	in the set of positive predicted Results.
 %
 false_negatives(Rs,Pos,PN):-
-	ord_subtract(Pos,Rs,PN).
+	ground(Rs)
+	,!
+	,ord_subtract(Pos,Rs,PN).
+false_negatives(Rs,Pos,PN):-
+	subtract(Pos,Rs,PN).
 
 
 %!	true_positives(+Results,+Positive,-PP) is det.
@@ -618,7 +666,11 @@ false_negatives(Rs,Pos,PN):-
 %	examples and the set of positive predicated Results.
 %
 true_positives(Rs,Pos,PP):-
-	ord_intersection(Rs,Pos,PP).
+	ground(Rs)
+	,!
+	,ord_intersection(Rs,Pos,PP).
+true_positives(Rs,Pos,PP):-
+	intersection(Rs,Pos,PP).
 
 
 %!	true_negatives(+Results,+Negative,-TN) is det.
@@ -630,7 +682,11 @@ true_positives(Rs,Pos,PP):-
 %	in the set of positive reported Results.
 %
 true_negatives(Rs,Neg,NN):-
-	ord_subtract(Neg,Rs,NN).
+	ground(Rs)
+	,!
+	,ord_subtract(Neg,Rs,NN).
+true_negatives(Rs,Neg,NN):-
+	subtract(Neg,Rs,NN).
 
 
 %!	difference(+Xs,+Ys,-Difference) is det.
@@ -667,8 +723,8 @@ ratio(Xs,Ys,R):-
 %
 %	Avoid dividing by zero.
 %
-%	If the denominator of a division os 0, return C, else do the
-%	division.
+%	If the denominator of a division is 0, return A, else divide
+%	A/B and return the result in C.
 %
 safe_division(A,0,A):-
 	!.
