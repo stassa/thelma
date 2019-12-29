@@ -6,10 +6,6 @@
 		      ,erase_program_clauses/1
 		      ,initialise_experiment/0
 		      ,cleanup_experiment/0
-		      ,print_clauses/1
-		      ,debug_clauses/2
-		      ,program/3
-		      ,closure/3
 		      ]).
 
 :-use_module(configuration).
@@ -485,9 +481,10 @@ metarule_body((L),Acc,Bs_):-
 %	Also removes metarule clauses from the dynamic database.
 %
 cleanup_experiment:-
-	configuration:experiment_file(P,_M)
-	,unload_file(P)
-	,cleanup_metarules.
+	%configuration:experiment_file(P,_M)
+	%,unload_file(P)
+	%,
+	cleanup_metarules.
 
 
 %!	cleanup_metarules is det.
@@ -498,151 +495,3 @@ cleanup_metarules:-
 	metarule_functor(F)
 	,functor(T,F,4)
 	,user:retractall(T).
-
-
-%!	print_clauses(+Clauses) is det.
-%
-%	Print a list of Clauses to standard output.
-%
-print_clauses(Cs):-
-	forall(member(C,Cs)
-	      ,(copy_term(C,C_)
-	       ,numbervars(C_)
-	       ,write_term(C_, [fullstop(true)
-			       ,nl(true)
-			       ,numbervars(true)
-			       ,quoted(true)
-			       ])
-	       )
-	      ).
-
-
-
-%!	debug_clauses(+Topic,+Clauses) is det.
-%
-%	Debug a list of Clauses if Topic is being debugged.
-%
-debug_clauses(T,L):-
-	\+ is_list(L)
-	,!
-	,debug_clauses(T,[L]).
-debug_clauses(T,Cs):-
-	forall(member(C,Cs)
-	      ,(copy_term(C,C_)
-	       ,numbervars(C_)
-	       ,format(atom(A),'~W',[C_, [fullstop(true)
-					 ,numbervars(true)
-					 ,quoted(true)]
-				    ])
-	       ,debug(T,'~w',A)
-	       )
-	      ).
-
-
-
-%!	program(+Symbols,+Module,-Program) is det.
-%
-%	Collect all clauses of a Program.
-%
-%	Symbols is the list of predicate indicators, F/A, of clauses in
-%	Program, or a single predicate indicator, F/A.
-%
-%	Module is the definition module for Progam. This can be set to
-%	user if the Program is not defined in a module.
-%
-%	Program is a list of all the clauses of the predicates in
-%	Symbols.
-%
-%	@tbd This doesn't attempt to sort the list of Symbols to exclude
-%	duplicates- if the same Symbol is passed in more than once, the
-%	same definition will be included that many times in Programs.
-%
-program(F/A,M,Ps):-
-	!
-	,program([F/A],M,Ps).
-program(Ss,M,Ps):-
-	findall(P
-	       ,(member(F/A,Ss)
-		,functor(H,F,A)
-		,M:clause(H,B)
-		,(   B == true
-		 ->  P = H
-		 ;   P = (H:-B)
-		 )
-		)
-	       ,Ps).
-
-
-
-%!	closure(+Progam_Symbols,+Module,-Closure) is det.
-%
-%	Collect all clauses of a program and its Closure.
-%
-%	As program/3, but also collects the definitions of programs in
-%	the closure of a progam.
-%
-%	Progam_Symbols is a list of predicate symbols and arities, F/A,
-%	of clauses in a program. Closure is the set of definitions of
-%	the Symbols in Program_Symbols, and the definitions of the
-%	programs in the closure of each program in Program_Symbols.
-%
-%	Module is the definition module of each program in Closure, or
-%	a module importing that module. To ensure each program in
-%	Closure is accessible the best thing to do is to export
-%	everything to the user module.
-%
-%	Example
-%	=======
-%	==
-%	?- closure([ancestor/2],user,_Cs),forall(member(P,_Cs),print_clauses(P)).
-%
-%	ancestor(A,B):-parent(A,B).
-%	ancestor(A,B):-parent(A,C),ancestor(C,B).
-%	parent(A,B):-father(A,B).
-%	parent(A,B):-mother(A,B).
-%	father(stathis,kostas).
-%	father(stefanos,dora).
-%	father(kostas,stassa).
-%	mother(alexandra,kostas).
-%	mother(paraskevi,dora).
-%	mother(dora,stassa).
-%	true.
-%	==
-%
-closure(Ss,M,Cs):-
-	closure(Ss,[],_Ps,M,[],Cs_)
-	,reverse(Cs_, Cs).
-
-%!	closure(+Symbols,+Path_Acc,-Path,+Module,+Acc,-Closure) is det.
-%
-%	Business end of closure/3.
-%
-closure([],Ps,Ps,_M,Cs,Cs):-
-	!.
-closure([F/A|Ss],Ps_Acc,Ps_Bind,M,Acc,Bind):-
-	functor(S,F,A)
-	,predicate_property(S,built_in)
-	,!
-	,closure(Ss,Ps_Acc,Ps_Bind,M,Acc,Bind).
-closure([S|Ss],Ps_Acc,Ps_Bind,M,Acc,Bind):-
-	\+ memberchk(S,Ps_Acc)
-	,!
-	,program(S,M,Cs)
-	,closure(Ss,[S|Ps_Acc],Ps_Acc_,M,[Cs|Acc],Acc_)
-	,program_symbols(Cs,Ss_)
-	,closure(Ss_,Ps_Acc_,Ps_Bind,M,Acc_,Bind).
-closure([_S|Ss],Ps,Ps_Acc,M,Acc,Bind):-
-	closure(Ss,Ps,Ps_Acc,M,Acc,Bind).
-
-
-%!	program_symbols(+Program,-Symbols) is det.
-%
-%	Collect symbols of body literals in a Program.
-%
-program_symbols(Ps,Ss):-
-	clauses_literals(Ps,Ls)
-	,setof(F/A
-	      ,L^Ls^(member(L,Ls)
-		    ,functor(L,F,A)
-		    )
-	      ,Ss).
