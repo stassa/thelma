@@ -95,9 +95,8 @@ learn(Pos,Neg,BK,MS,Prog):-
 	,prove(C_,Pos_c,BK,MS,Po-Co,Ps)
 	,disprove(Neg_c,Ps)
 	,project_metasubs(Ps, Prog).
-learn(_Pos,_Neg,_BK,_MS,_Prog):-
-	cleanup_experiment
-	,fail.
+learn(_Pos,_Neg,_BK,_MS,[]):-
+	cleanup_experiment.
 
 
 %!	convert_examples(+Examples,-Converted) is det.
