@@ -366,6 +366,11 @@ erase_program_clauses([Ref|Rs]):-
 %	Load the currently configured experiment file.
 %
 initialise_experiment:-
+	configuration:metarule(Id,_,_,_)
+	,\+ configuration:order_constraints(Id,_,_,_,_)
+	,format(atom(E),'Missing constraints for metarule ~w',[Id])
+	,throw(E).
+initialise_experiment:-
 	configuration:experiment_file(P,_M)
 	,user:use_module(P)
 	,transform_metarules.
