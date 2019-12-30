@@ -261,6 +261,10 @@ unique_indices(O,[c(I/J/K,C)|Ss],Acc,Bind):-
 %	cleanup_experiment/0 after it if cleanup is required between
 %	experiments.
 %
+experiment_data(T,_,_,_,_):-
+	learning_targets(Ts)
+	,\+ memberchk(T,Ts)
+	,throw('Unknown learning target':T).
 experiment_data(T,Pos,Neg,BK,MS):-
 	configuration:experiment_file(P,M)
 	,use_module(P)
