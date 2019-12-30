@@ -102,13 +102,19 @@ learner(thelma).
 %	in the mood and let me know.
 %
 metarule(unit, [P], [X,Y], mec(P,X,Y) :- true).
-metarule(projection, [P,Q], [X,X], mec(P,X,X) :- mec(Q,X)).
+metarule(projection_21, [P,Q], [X,X], mec(P,X,X) :- mec(Q,X)).
+metarule(projection_12, [P,Q], [X,X], mec(P,X) :- mec(Q,X,X)).
 metarule(identity, [P,Q], [X,Y], mec(P,X,Y) :- mec(Q,X,Y)).
 metarule(inverse, [P,Q], [X,Y], mec(P,X,Y) :- mec(Q,Y,X)).
 metarule(chain, [P,Q,R], [X,Y,Z], (mec(P,X,Y) :- mec(Q,X,Z), mec(R,Z,Y))).
 metarule(tailrec, [P,Q], [X,Y,Z], (mec(P,X,Y) :- mec(Q,X,Z), mec(P,Z,Y))).
 metarule(precon, [P,Q,R], [X,Y], (mec(P,X,Y) :- mec(Q,X), mec(R,X,Y))).
 metarule(postcon, [P,Q,R], [X,Y], (mec(P,X,Y) :- mec(Q,X,Y), mec(R,Y))).
+metarule(switch, [P,Q,R], [X,Y,Z], (mec(P,X,Y) :- mec(Q,X,Z), mec(R,Y,Z))).
+
+metarule(chain_abduce_x, [P,Q,R,X], [X,Y,Z], (mec(P,X,Y) :- mec(Q,X,Z), mec(R,Z,Y))).
+metarule(chain_abduce_y, [P,Q,R,Y], [X,Y,Z], (mec(P,X,Y) :- mec(Q,X,Z), mec(R,Z,Y))).
+metarule(chain_abduce_z, [P,Q,R,Z], [X,Y,Z], (mec(P,X,Y) :- mec(Q,X,Z), mec(R,Z,Y))).
 
 
 %!	order_constraints(+M,+Second_Order,+First_Order,+SO_Constraints,+FO_Constraints)
@@ -122,13 +128,18 @@ metarule(postcon, [P,Q,R], [X,Y], (mec(P,X,Y) :- mec(Q,X,Y), mec(R,Y))).
 %	constraints. See notes in metarule/4.
 %
 order_constraints(unit,_Ss,_Fs,[],[]).
-order_constraints(projection,[P,Q],_Fs,[P>Q],[]).
+order_constraints(projection_21,[P,Q],_Fs,[P>Q],[]).
+order_constraints(projection_12,[P,Q],_Fs,[P>Q],[]).
 order_constraints(inverse,[P,Q],_Fs,[P>Q],[]).
 order_constraints(identity,[P,Q],_Fs,[P>Q],[]).
 order_constraints(chain,[P,Q,R],_Fs,[P>Q,P>R],[]).
 order_constraints(tailrec,[P,Q],[X,Y,Z],[P>Q],[X>Z,Z>Y]).
 order_constraints(precon,[P,Q,R],_Fs,[P>Q,P>R],[]).
 order_constraints(postcon,[P,Q,R],_Fs,[P>Q,P>R],[]).
+order_constraints(switch,[P,Q,R],_Fs,[P>Q,P>R],[]).
+order_constraints(chain_abduce_x,[P,Q,R,_X],_Fs,[P>Q,P>R],[]).
+order_constraints(chain_abduce_y,[P,Q,R,_Y],_Fs,[P>Q,P>R],[]).
+order_constraints(chain_abduce_z,[P,Q,R,_Z],_Fs,[P>Q,P>R],[]).
 
 
 %!	metarule_functor(?Functor) is semidet.
