@@ -20,7 +20,7 @@
 	   ,order_constraints/5.
 
 /* Debug levels */
-:-debug(depth). % Debug number of clauses and invented predicates.
+%:-debug(depth). % Debug number of clauses and invented predicates.
 %:-debug(learn). % Debug learned metasubs
 
 
