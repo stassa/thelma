@@ -1,5 +1,6 @@
 :-module(louise_compatibility, [protocol_experiment/3
 			       ,print_or_debug/3
+			       ,list_learning_results/0
 			       ,list_problem_statistics/1
 			       ,debug_config/1
 			       ,list_config/0
@@ -16,6 +17,8 @@
 			       ,program/3
 			       ]).
 
+:-use_module(auxiliaries).
+:-use_module(configuration).
 
 /** <module> Predicates ensuring compatibility with Louise
 
@@ -80,6 +83,85 @@ print_or_debug(print,S,C):-
 print_or_debug(both,Str/Sub,C):-
 	print_or_debug(print,Str,C)
 	,print_or_debug(debug,Sub,C).
+
+
+
+%!	list_learning_results is det.
+%
+%	List results for all learning targets.
+%
+%	Prints to the console the results of training on each learning
+%	target defined in the current experiment file.
+%
+%	Learning targets are obtained with a call to learning_targets/1.
+%
+%	By default, each learning target is passed to learn/1.
+%	Alternatively, the user may declare a clause of the dynamic,
+%	multifile predicate learning_predicate/1 to select a different
+%	learning predicate.
+%
+%	Alternative learning predicates must be one of [learn_dynamic/1,
+%	learn_with_examples_invention/2]. learn/2 can also be specified,
+%	but it will have the same results as learn/1.
+%
+%	If a predicate with a symbol other than learn, learn_dynamic or
+%	learn_with_examples_invention, or with arity other than 1 or 2
+%	is specified, an informative error is raised.
+%
+%	@see learning_predicate/1, learning_targets/1
+%
+/* Not necessary for Thelma.
+list_learning_results:-
+	configuration:learning_predicate(P)
+	,!
+	,list_learning_results(P).
+*/
+list_learning_results:-
+	list_learning_results(learn/1).
+
+%!	list_learning_results(+Learning_Predicate) is det.
+%
+%	Business end of list_learning_results/0.
+%
+%	Learning_Predicate is a predicate indicator, the symbol and
+%	arity of one of the learning predicates in Louise.
+%
+%	Clauses are selected according to Learning_Predicate. Known
+%	learning predicates with arity in [1,2] are called on all
+%	learning targets and the results output to console. Predicates
+%	with a symbol that is not one of the known learning predicates
+%	or an arity other than an integer in [1,2], raise an appropriate
+%	error.
+%
+list_learning_results(P/N):-
+	\+ memberchk(P,[learn
+		       ,learn_dynamic
+		       ,learn_with_examples_invention
+		       ])
+	,format(atom(A),'Unknown learning predicate: ~w',[P/N])
+	,throw(A)
+	% Actually needed to raise this error if the next also applies.
+	,!.
+list_learning_results(P/N):-
+	\+ memberchk(N, [1,2])
+	,format(atom(A),'Learning predicate arity must be in [1,2]: got ~w',[P/N])
+	,throw(A).
+list_learning_results(P/1):-
+	!
+	,learning_targets(Ts)
+	,forall(member(T,Ts)
+	       ,(call(P,T)
+		,nl
+		)
+	       ).
+list_learning_results(P/2):-
+	learning_targets(Ts)
+	,forall(member(T,Ts)
+	       ,(call(P,T,Ps)
+		,print_clauses(Ps)
+		,nl
+		)
+	       ).
 
 
 
